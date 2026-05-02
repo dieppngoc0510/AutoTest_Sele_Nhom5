@@ -1,10 +1,32 @@
 package org.example.pages;
 import org.example.tests.Constant;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import java.util.List;
 
 public class ProductDetailPage {
+
+    private final WebDriver driver;
+
+    // =======================================================
+    // CONSTRUCTORS
+    // =======================================================
+
+    /** Constructor nhận WebDriver – dùng khi tạo từ test có driver riêng */
+    public ProductDetailPage(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    /** Constructor không tham số – dùng Constant.WEBDRIVER (cho ViewProductTest) */
+    public ProductDetailPage() {
+        this.driver = Constant.WEBDRIVER.get();
+    }
+
+    // =======================================================
+    // LOCATORS
+    // =======================================================
 
     // Quét rộng Breadcrumb
     private final By _breadcrumb = By.xpath("//*[contains(@class, 'breadcrumb')] | //*[@aria-label='breadcrumb'] | //*[contains(text(), 'Trang chủ')] | //nav/ol/li");
@@ -13,14 +35,12 @@ public class ProductDetailPage {
 
     // Mã SP
     private final By _productCode = By.xpath("//*[contains(@class, 'product-detail-code')] | //*[contains(text(), 'Mã SP') or contains(@class, 'sku')]");
-    // Giá tiền (Giới hạn trong vùng thông tin chính của sản phẩm)
-    private final By _newPrice = By.xpath("//div[contains(@class, 'product-detail')]//*[contains(text(), '₫') or contains(text(), 'đ')]");
+    // Giá tiền
+    private final By _newPrice = By.xpath("//*[contains(text(), '₫') or contains(text(), 'đ')]");
 
     // Màu sắc và Kích thước
     private final By _colorSelector = By.xpath("//*[contains(text(), 'Màu sắc')]/following-sibling::* | //div[contains(@class, 'color')]");
     private final By _sizeSelector = By.xpath("//*[contains(text(), 'Kích thước')]/following-sibling::* | //div[contains(@class, 'size')]");
-
-    // ĐÃ XÓA LOCATOR CỦA SỐ LƯỢNG
 
     // Nút mua hàng
     private final By _btnAddToCart = By.xpath("//button[contains(text(), 'THÊM VÀO GIỎ HÀNG')]");
@@ -29,17 +49,24 @@ public class ProductDetailPage {
     private final By _productImage = By.xpath("//div[contains(@class, 'product') or contains(@class, 'detail')]//img | //img[not(contains(@src, 'logo'))]");
     private final By _listThumbnails = By.xpath("//img[contains(@class, 'thumb') or contains(@class, 'sub')]");
 
+    // Giá cũ
+    private final By _oldPrice = By.xpath("//*[contains(@class, 'old-price') or contains(@class, 'original-price') or contains(@style, 'line-through')] | //del");
+
+    // =======================================================
+    // METHODS
+    // =======================================================
+
     // TC02: Kiểm tra trang chi tiết
     public boolean isProductDetailDisplayed() {
         try {
-            boolean hasBreadcrumb = !Constant.WEBDRIVER.get().findElements(_breadcrumb).isEmpty();
-            boolean hasImage = !Constant.WEBDRIVER.get().findElements(_productImage).isEmpty();
-            boolean hasName = !Constant.WEBDRIVER.get().findElements(_productName).isEmpty();
-            boolean hasCode = !Constant.WEBDRIVER.get().findElements(_productCode).isEmpty();
-            boolean hasNewPrice = !Constant.WEBDRIVER.get().findElements(_newPrice).isEmpty();
-            boolean hasColor = !Constant.WEBDRIVER.get().findElements(_colorSelector).isEmpty();
-            boolean hasSize = !Constant.WEBDRIVER.get().findElements(_sizeSelector).isEmpty();
-            boolean hasBtn = !Constant.WEBDRIVER.get().findElements(_btnAddToCart).isEmpty();
+            boolean hasBreadcrumb = !driver.findElements(_breadcrumb).isEmpty();
+            boolean hasImage     = !driver.findElements(_productImage).isEmpty();
+            boolean hasName      = !driver.findElements(_productName).isEmpty();
+            boolean hasCode      = !driver.findElements(_productCode).isEmpty();
+            boolean hasNewPrice  = !driver.findElements(_newPrice).isEmpty();
+            boolean hasColor     = !driver.findElements(_colorSelector).isEmpty();
+            boolean hasSize      = !driver.findElements(_sizeSelector).isEmpty();
+            boolean hasBtn       = !driver.findElements(_btnAddToCart).isEmpty();
 
             System.out.println("Trang chi tiết hiển thị: Breadcrumb=" + hasBreadcrumb + ", Ảnh=" + hasImage +
                     ", Tên=" + hasName + ", Mã SP=" + hasCode + ", Giá=" + hasNewPrice +
@@ -55,7 +82,7 @@ public class ProductDetailPage {
     // TC04: Kiểm tra tương tác khi click ảnh nhỏ (Thumbnail)
     public boolean testThumbnailInteraction() {
         try {
-            List<WebElement> thumbs = Constant.WEBDRIVER.get().findElements(_listThumbnails);
+            List<WebElement> thumbs = driver.findElements(_listThumbnails);
             // Nếu chỉ có 1 ảnh thì coi như pass luôn phần này vì không có ảnh để tương tác
             if (thumbs.size() < 2) {
                 System.out.println("Sản phẩm không có đủ ảnh phụ để test tính năng Thumbnail.");
@@ -63,7 +90,7 @@ public class ProductDetailPage {
             }
 
             // Lấy link ảnh chính hiện tại
-            WebElement mainImg = Constant.WEBDRIVER.get().findElement(_productImage);
+            WebElement mainImg = driver.findElement(_productImage);
             String oldSrc = mainImg.getAttribute("src");
 
             // Lấy link ảnh thumbnail thứ 2
@@ -75,8 +102,8 @@ public class ProductDetailPage {
                 return true;
             }
 
-            // Click vào ảnh thumbnail thứ 2 bằng Javascript (Đảm bảo click không bị vướng thẻ che khuất)
-            org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER.get();
+            // Click vào ảnh thumbnail thứ 2 bằng Javascript
+            JavascriptExecutor js = (JavascriptExecutor) driver;
             js.executeScript("arguments[0].click();", thumbs.get(1));
 
             // Chờ 2s để UI đổi ảnh chính
@@ -92,22 +119,10 @@ public class ProductDetailPage {
         }
     }
 
-
-    // =======================================================
-    // BỔ SUNG CHO TC07 - KIỂM TRA GIÁ CŨ (Chỉ lấy ở vùng chi tiết)
-    // =======================================================
-    private final By _oldPrice = By.xpath("//div[contains(@class, 'product-detail')]//del | //div[contains(@class, 'product-detail')]//*[contains(@class, 'old-price') or contains(@style, 'line-through')]");
-
+    // TC07: Kiểm tra giá cũ
     public boolean isOldPriceDisplayed() {
         try {
-            List<WebElement> elements = Constant.WEBDRIVER.get().findElements(_oldPrice);
-            for (WebElement el : elements) {
-                if (el.isDisplayed() && !el.getText().trim().isEmpty()) {
-                    System.out.println("Phát hiện giá cũ hiển thị: " + el.getText());
-                    return true;
-                }
-            }
-            return false;
+            return !driver.findElements(_oldPrice).isEmpty();
         } catch (Exception e) {
             return false;
         }
