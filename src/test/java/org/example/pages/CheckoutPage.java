@@ -13,7 +13,7 @@ public class CheckoutPage {
 
     public void selectPaymentMethodCOD() {
         try {
-            WebElement codLabel = Constant.WEBDRIVER.get().findElement(By.xpath("//label[contains(text(), 'COD') or contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'khi nhận hàng')]"));
+            WebElement codLabel = Constant.WEBDRIVER.get().findElement(By.xpath("//label[contains(., 'COD') or contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'khi nhận hàng')]"));
             codLabel.click();
         } catch (Exception e) {
             System.out.println("PT Thanh toán COD có thể đã được chọn mặc định.");
@@ -22,7 +22,7 @@ public class CheckoutPage {
 
     public void selectPaymentMethodQR() {
         try {
-            WebElement qrLabel = Constant.WEBDRIVER.get().findElement(By.xpath("//label[contains(text(), 'Chuyển khoản') or contains(text(), 'QR')]"));
+            WebElement qrLabel = Constant.WEBDRIVER.get().findElement(By.xpath("//label[contains(., 'Chuyển khoản') or contains(., 'QR')]"));
             qrLabel.click();
             System.out.println("Đã chọn phương thức: Chuyển khoản / Mã QR");
         } catch (Exception e) {
@@ -33,13 +33,13 @@ public class CheckoutPage {
     public void clickDatHang() {
         try {
             WebElement btn = Constant.WEBDRIVER.get().findElement(_btnDatHang);
-            ((JavascriptExecutor) Constant.WEBDRIVER).executeScript("arguments[0].scrollIntoView({block: 'center'});", btn);
+            ((JavascriptExecutor) Constant.WEBDRIVER.get()).executeScript("arguments[0].scrollIntoView({block: 'center'});", btn);
             Thread.sleep(500);
             btn.click();
         } catch (Exception e) {
             try {
                 WebElement btn = Constant.WEBDRIVER.get().findElement(_btnDatHang);
-                ((JavascriptExecutor) Constant.WEBDRIVER).executeScript("arguments[0].click();", btn);
+                ((JavascriptExecutor) Constant.WEBDRIVER.get()).executeScript("arguments[0].click();", btn);
             } catch (Exception ex) {
                 System.out.println("KHÔNG TÌM THẤY nút Đặt hàng trên màn hình!");
             }

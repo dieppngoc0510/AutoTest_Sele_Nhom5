@@ -24,7 +24,7 @@ public class HomePage {
     // METHODS
     // =======================================================
     public void open() {
-        Constant.WEBDRIVER.get().get("[http://127.0.0.1:8000/](http://127.0.0.1:8000/)");
+        Constant.WEBDRIVER.get().get("http://127.0.0.1:8000/");
     }
 
     public SearchResultPage searchProduct(String keyword) {
@@ -73,7 +73,7 @@ public class HomePage {
             List<WebElement> images = Constant.WEBDRIVER.get().findElements(_listProductImages);
             if (images.size() > index) {
                 // Click bằng JS tránh bị lỗi Click intercepted
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER;
+                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER.get();
                 js.executeScript("arguments[0].click();", images.get(index));
                 System.out.println("Đã click vào sản phẩm ở vị trí index: " + index);
             }
@@ -123,7 +123,7 @@ public class HomePage {
             List<WebElement> btns = Constant.WEBDRIVER.get().findElements(_btnLoadMore);
             if (!btns.isEmpty() && btns.get(0).isDisplayed()) {
                 WebElement btn = btns.get(0);
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER;
+                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER.get();
                 js.executeScript("arguments[0].scrollIntoView(true);", btn);
                 Thread.sleep(1000); // Đợi scroll mượt
                 js.executeScript("arguments[0].click();", btn);

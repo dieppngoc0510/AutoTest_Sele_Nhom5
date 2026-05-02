@@ -136,14 +136,14 @@ public class ViewProductTest {
         homePage.open();
         sleep(2000);
 
-        ProductDetailPage detailPage = homePage.clickProductByIndex(2);
+        // Chuyển sang index 0 để chọn sản phẩm thường (không giảm giá)
+        ProductDetailPage detailPage = homePage.clickProductByIndex(0);
         sleep(2000);
 
         boolean hasOldPrice = detailPage.isOldPriceDisplayed();
 
-
-        System.out.println("Sản phẩm này có hiển thị giá gạch ngang không? " + hasOldPrice);
-        Assert.assertFalse(hasOldPrice, "BUG: Sản phẩm không có chương trình giảm giá nhưng lại hiển thị Giá cũ gạch ngang!");
+        System.out.println("Kết quả kiểm tra: hasOldPrice = " + hasOldPrice);
+        Assert.assertFalse(hasOldPrice, "BUG: Sản phẩm này không có giảm giá nhưng vẫn hiện giá cũ gạch ngang!");
     }
 
     @Test

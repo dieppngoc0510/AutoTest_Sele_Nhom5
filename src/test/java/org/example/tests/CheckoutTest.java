@@ -20,7 +20,7 @@ public class CheckoutTest {
         Constant.WEBDRIVER.set(new ChromeDriver(options));
         Constant.WEBDRIVER.get().manage().window().maximize();
 
-        login("qnhu", "qnhu123");
+        login("ngocdiep", "123456");
     }
 
     @AfterMethod
@@ -42,6 +42,18 @@ public class CheckoutTest {
         Constant.WEBDRIVER.get().findElement(By.name("password")).sendKeys(pass);
         Constant.WEBDRIVER.get().findElement(By.name("password")).submit();
         sleep(2000);
+
+        // Đảm bảo user có địa chỉ để nút Đặt hàng không bị disabled
+        Constant.WEBDRIVER.get().get("http://127.0.0.1:8000/profile");
+        sleep(1500);
+        WebElement addressField = Constant.WEBDRIVER.get().findElement(By.name("address"));
+        if (addressField.getAttribute("value").isEmpty()) {
+            addressField.sendKeys("123 Đường ABC, Quận 1, TP.HCM");
+            Constant.WEBDRIVER.get().findElement(By.name("phone")).clear();
+            Constant.WEBDRIVER.get().findElement(By.name("phone")).sendKeys("0987654321");
+            Constant.WEBDRIVER.get().findElement(By.cssSelector("form.shopee-form-section button[type='submit']")).click();
+            sleep(2000);
+        }
 
         Constant.WEBDRIVER.get().get("http://127.0.0.1:8000/product/9");
         sleep(1500);
@@ -234,6 +246,6 @@ public class CheckoutTest {
         long discountAmount = page.getDiscountAmount();
 
         Assert.assertTrue(hasErrorMsg || discountAmount == 0,
-                "get().getCurrentUrl()BUG NGHIÊM TRỌNG: Mã giảm giá đã hết hạn nhưng hệ thống VẪN CHO ÁP DỤNG!");
+                "BUG NGHIÊM TRỌNG: Mã giảm giá đã hết hạn nhưng hệ thống VẪN CHO ÁP DỤNG!");
     }
 }

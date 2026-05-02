@@ -14,6 +14,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
+import org.example.report.TestListener;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.List;
 import static java.lang.Thread.sleep;
 import static org.example.tests.Constant.TOAST;
 
+@Listeners(TestListener.class)
 public class BaseTest {
     protected static final String BASE_URL = "http://127.0.0.1:8000/";
 

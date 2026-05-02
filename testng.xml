@@ -11,6 +11,7 @@
             <class name="org.example.tests.UpdateCartTest"/>
             <class name="org.example.tests.DeleteCartTest"/>
             <class name="org.example.tests.CartApiTest"/>
+            <class name="org.example.tests.ApiSearchTest"/>
             <class name="org.example.tests.ResponsiveTest"/>
         </classes>
     </test>

@@ -13,8 +13,8 @@ public class ProductDetailPage {
 
     // Mã SP
     private final By _productCode = By.xpath("//*[contains(@class, 'product-detail-code')] | //*[contains(text(), 'Mã SP') or contains(@class, 'sku')]");
-    // Giá tiền
-    private final By _newPrice = By.xpath("//*[contains(text(), '₫') or contains(text(), 'đ')]");
+    // Giá tiền (Giới hạn trong vùng thông tin chính của sản phẩm)
+    private final By _newPrice = By.xpath("//div[contains(@class, 'product-detail')]//*[contains(text(), '₫') or contains(text(), 'đ')]");
 
     // Màu sắc và Kích thước
     private final By _colorSelector = By.xpath("//*[contains(text(), 'Màu sắc')]/following-sibling::* | //div[contains(@class, 'color')]");
@@ -76,7 +76,7 @@ public class ProductDetailPage {
             }
 
             // Click vào ảnh thumbnail thứ 2 bằng Javascript (Đảm bảo click không bị vướng thẻ che khuất)
-            org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER;
+            org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER.get();
             js.executeScript("arguments[0].click();", thumbs.get(1));
 
             // Chờ 2s để UI đổi ảnh chính
@@ -94,13 +94,20 @@ public class ProductDetailPage {
 
 
     // =======================================================
-    // BỔ SUNG CHO TC07 - KIỂM TRA GIÁ CŨ
+    // BỔ SUNG CHO TC07 - KIỂM TRA GIÁ CŨ (Chỉ lấy ở vùng chi tiết)
     // =======================================================
-    private final By _oldPrice = By.xpath("//*[contains(@class, 'old-price') or contains(@class, 'original-price') or contains(@style, 'line-through')] | //del");
+    private final By _oldPrice = By.xpath("//div[contains(@class, 'product-detail')]//del | //div[contains(@class, 'product-detail')]//*[contains(@class, 'old-price') or contains(@style, 'line-through')]");
 
     public boolean isOldPriceDisplayed() {
         try {
-            return !Constant.WEBDRIVER.get().findElements(_oldPrice).isEmpty();
+            List<WebElement> elements = Constant.WEBDRIVER.get().findElements(_oldPrice);
+            for (WebElement el : elements) {
+                if (el.isDisplayed() && !el.getText().trim().isEmpty()) {
+                    System.out.println("Phát hiện giá cũ hiển thị: " + el.getText());
+                    return true;
+                }
+            }
+            return false;
         } catch (Exception e) {
             return false;
         }

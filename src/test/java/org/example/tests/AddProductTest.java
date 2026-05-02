@@ -119,17 +119,17 @@ public class AddProductTest extends BaseTest {
                 "Badge giỏ hàng phải hiển thị sau khi thêm sản phẩm");
     }
 
-    @Test(description = "FE08-TC09 - Thông báo tự động ẩn sau một khoảng thời gian")
-    public void testToastBehavior() {
-        goToProduct(AO_GILE_LEN);
-        ProductPage productPage = new ProductPage(driver);
-        productPage.addProductToCart(0, 0);
+        @Test(description = "FE08-TC09 - Thông báo tự động ẩn sau một khoảng thời gian")
+        public void testToastBehavior() {
+            goToProduct(AO_GILE_LEN);
+            ProductPage productPage = new ProductPage(driver);
+            productPage.addProductToCart(0, 0);
 
-        Assert.assertTrue(productPage.getToastMessage().contains("Đã thêm"),
-                "Không hiển thị thông báo thêm sản phẩm vào giỏ hàng");
-        Assert.assertTrue(productPage.isToastHidden(),
-                "Thông báo thêm giỏ hàng chưa tự động ẩn sau khi hiển thị");
-    }
+            Assert.assertTrue(productPage.getToastMessage().contains("Đã thêm"),
+                    "Không hiển thị thông báo thêm sản phẩm vào giỏ hàng");
+            Assert.assertTrue(productPage.isToastHidden(),
+                    "Thông báo thêm giỏ hàng chưa tự động ẩn sau khi hiển thị");
+        }
 
     @Test(description = "FE08-TC10 - Nhấn \"Xem giỏ hàng\" trên thông báo điều hướng đúng")
     public void testViewCartFromToast() {
