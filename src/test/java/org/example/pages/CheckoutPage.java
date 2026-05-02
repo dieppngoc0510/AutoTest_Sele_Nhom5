@@ -33,13 +33,13 @@ public class CheckoutPage {
     public void clickDatHang() {
         try {
             WebElement btn = Constant.WEBDRIVER.get().findElement(_btnDatHang);
-            ((JavascriptExecutor) Constant.WEBDRIVER).executeScript("arguments[0].scrollIntoView({block: 'center'});", btn);
+            ((JavascriptExecutor) Constant.WEBDRIVER.get()).executeScript("arguments[0].scrollIntoView({block: 'center'});", btn);
             Thread.sleep(500);
             btn.click();
         } catch (Exception e) {
             try {
                 WebElement btn = Constant.WEBDRIVER.get().findElement(_btnDatHang);
-                ((JavascriptExecutor) Constant.WEBDRIVER).executeScript("arguments[0].click();", btn);
+                ((JavascriptExecutor) Constant.WEBDRIVER.get()).executeScript("arguments[0].click();", btn);
             } catch (Exception ex) {
                 System.out.println("KHÔNG TÌM THẤY nút Đặt hàng trên màn hình!");
             }
