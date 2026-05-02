@@ -49,6 +49,13 @@ public class BaseTest {
         wait.until(d -> !d.getCurrentUrl().contains("login/"));
     }
 
+    protected void loginAsAdmin() {
+        getUrl(BASE_URL + "login/");
+        LoginPage loginPage = new LoginPage(driver);
+        loginPage.login("admin", "admin");
+        wait.until(d -> !d.getCurrentUrl().contains("login/"));
+    }
+
     protected void openHomePage() {
         getUrl(BASE_URL);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".product-card")));
@@ -278,13 +285,13 @@ public class BaseTest {
     }
     /** Vào trang Thông tin cá nhân */
     protected void goToProfile() {
-        driver.get(BASE_URL + "/profile/");
+        driver.get(BASE_URL + "profile/");
         sleep(1000);
     }
 
     /** Vào trang Đổi mật khẩu */
     protected void goToChangePassword() {
-        driver.get(BASE_URL + "/change-password/");
+        driver.get(BASE_URL + "change-password/");
         sleep(1000);
     }
     protected void login(String username, String password) {

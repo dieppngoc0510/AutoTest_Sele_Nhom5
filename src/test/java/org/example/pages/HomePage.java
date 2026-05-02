@@ -1,12 +1,19 @@
 package org.example.pages;
 
-import org.example.tests.Constant;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 import java.util.List;
 
 public class HomePage {
+
+    private final WebDriver driver;
+    private final WebDriverWait wait;
 
     // =======================================================
     // LOCATORS
@@ -20,24 +27,47 @@ public class HomePage {
     private final By _listProductColorDots = By.xpath(".//div[contains(@class, 'product-colors-preview') or contains(@class, 'color')]");
     private final By _menuCategoryAo = By.xpath("//a[contains(@href, '/products/ao') or contains(text(), 'Áo') or contains(text(), 'ÁO')]");
 
+    // Locators cho user menu / logout
+    private final By _userMenuToggle = By.cssSelector(".user-menu-toggle, .user-avatar, .navbar-user");
+    private final By _logoutBtn = By.xpath("//a[contains(text(),'Đăng xuất') or contains(text(),'Logout')] | //button[contains(text(),'Đăng xuất') or contains(text(),'Logout')]");
+    private final By _userMenuDropdown = By.cssSelector(".user-dropdown, .user-menu-dropdown, .dropdown-menu");
+
+    // =======================================================
+    // CONSTRUCTOR
+    // =======================================================
+    public HomePage(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    /** Constructor không tham số – dùng Constant.WEBDRIVER (cho ViewProductTest / SearchTest) */
+    public HomePage() {
+        this.driver = org.example.tests.Constant.WEBDRIVER.get();
+        this.wait = new WebDriverWait(this.driver, Duration.ofSeconds(10));
+    }
+
     // =======================================================
     // METHODS
     // =======================================================
+    public void open(String baseUrl) {
+        driver.get(baseUrl);
+    }
+
     public void open() {
-        Constant.WEBDRIVER.get().get("[http://127.0.0.1:8000/](http://127.0.0.1:8000/)");
+        driver.get("http://127.0.0.1:8000/");
     }
 
     public SearchResultPage searchProduct(String keyword) {
-        WebElement txtSearch = Constant.WEBDRIVER.get().findElement(_txtSearch);
+        WebElement txtSearch = driver.findElement(_txtSearch);
         txtSearch.clear();
         txtSearch.sendKeys(keyword);
         txtSearch.sendKeys(Keys.ENTER);
-        return new SearchResultPage();
+        return new SearchResultPage(driver);
     }
 
     // TC01: Kiểm tra cấu trúc thẻ sản phẩm (Bao gồm check linh hoạt giá mới/giá cũ)
     public boolean isProductListDisplayed() {
-        List<WebElement> cards = Constant.WEBDRIVER.get().findElements(_listProductCards);
+        List<WebElement> cards = driver.findElements(_listProductCards);
         if (cards.isEmpty()) {
             System.out.println("Không tìm thấy bất kỳ thẻ sản phẩm nào trên trang!");
             return false;
@@ -48,7 +78,6 @@ public class HomePage {
             try {
                 boolean hasImg = !card.findElements(By.xpath(".//img")).isEmpty();
                 boolean hasName = !card.findElements(By.xpath(".//*[contains(@class, 'name') or contains(@class, 'title')]")).isEmpty();
-
                 boolean hasPrice = !card.findElements(By.xpath(".//*[contains(@class, 'price')]")).isEmpty();
                 boolean hasColors = !card.findElements(_listProductColorDots).isEmpty();
 
@@ -56,6 +85,7 @@ public class HomePage {
                     validProductCount++;
                 }
             } catch (Exception e) {
+                // bỏ qua card lỗi
             }
         }
         System.out.println("Tổng số sản phẩm hiển thị chuẩn: " + validProductCount + "/" + cards.size());
@@ -70,22 +100,22 @@ public class HomePage {
     // Hàm mở trang chi tiết theo vị trí (Cho TC04)
     public ProductDetailPage clickProductByIndex(int index) {
         try {
-            List<WebElement> images = Constant.WEBDRIVER.get().findElements(_listProductImages);
+            List<WebElement> images = driver.findElements(_listProductImages);
             if (images.size() > index) {
                 // Click bằng JS tránh bị lỗi Click intercepted
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER;
+                JavascriptExecutor js = (JavascriptExecutor) driver;
                 js.executeScript("arguments[0].click();", images.get(index));
                 System.out.println("Đã click vào sản phẩm ở vị trí index: " + index);
             }
         } catch (Exception e) {
             System.out.println("Lỗi: Không thể click vào sản phẩm! " + e.getMessage());
         }
-        return new ProductDetailPage();
+        return new ProductDetailPage(driver);
     }
 
     public void clickCategoryAo() {
         try {
-            Constant.WEBDRIVER.get().findElement(_menuCategoryAo).click();
+            driver.findElement(_menuCategoryAo).click();
             System.out.println("Đã click vào Menu danh mục Áo.");
         } catch (Exception e) {
             System.out.println("Lỗi: Không tìm thấy Menu Áo trên Navbar!");
@@ -94,7 +124,7 @@ public class HomePage {
 
     // TC03: Kiểm tra lọc danh mục
     public boolean areAllProductsBelongToCategory(String expectedKeyword) {
-        List<WebElement> names = Constant.WEBDRIVER.get().findElements(_listProductNames);
+        List<WebElement> names = driver.findElements(_listProductNames);
         if (names.isEmpty()) return false;
 
         String lowerKeyword = expectedKeyword.toLowerCase();
@@ -108,6 +138,30 @@ public class HomePage {
         return true;
     }
 
+    // =======================================================
+    // USER MENU / LOGOUT
+    // =======================================================
+
+    /** Mở dropdown menu người dùng */
+    public void openUserMenu() {
+        WebElement toggle = wait.until(ExpectedConditions.elementToBeClickable(_userMenuToggle));
+        toggle.click();
+    }
+
+    /** Nhấn nút Đăng xuất */
+    public void clickLogout() {
+        WebElement logout = wait.until(ExpectedConditions.elementToBeClickable(_logoutBtn));
+        logout.click();
+    }
+
+    /** Kiểm tra dropdown menu người dùng có hiển thị không */
+    public boolean isUserMenuDisplayed() {
+        try {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(_userMenuDropdown)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     // =======================================================
     // BỔ SUNG CHO TC06 - NÚT XEM THÊM
@@ -115,17 +169,17 @@ public class HomePage {
     private final By _btnLoadMore = By.xpath("//*[contains(text(), 'Xem thêm') or contains(text(), 'XEM THÊM') or contains(@class, 'load-more')]");
 
     public int getProductCount() {
-        return Constant.WEBDRIVER.get().findElements(_listProductCards).size();
+        return driver.findElements(_listProductCards).size();
     }
 
     public void clickLoadMoreButton() {
         try {
-            List<WebElement> btns = Constant.WEBDRIVER.get().findElements(_btnLoadMore);
+            List<WebElement> btns = driver.findElements(_btnLoadMore);
             if (!btns.isEmpty() && btns.get(0).isDisplayed()) {
                 WebElement btn = btns.get(0);
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER;
+                JavascriptExecutor js = (JavascriptExecutor) driver;
                 js.executeScript("arguments[0].scrollIntoView(true);", btn);
-                Thread.sleep(1000); // Đợi scroll mượt
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
                 js.executeScript("arguments[0].click();", btn);
                 System.out.println("Đã click nút 'Xem thêm'.");
             } else {
