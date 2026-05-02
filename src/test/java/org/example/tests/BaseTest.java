@@ -28,10 +28,10 @@ public class BaseTest {
     public void beforeMethod() {
         WebDriverManager.chromedriver().setup();
         // Dòng này khởi tạo và bật trình duyệt Chrome mới trước mỗi test case
-        Constant.WEBDRIVER = new ChromeDriver();
+        Constant.WEBDRIVER.set(new ChromeDriver());
         // Phóng to cửa sổ trình duyệt
-        Constant.WEBDRIVER.manage().window().maximize();
-        driver = Constant.WEBDRIVER;
+        Constant.WEBDRIVER.get().manage().window().maximize();
+        driver = Constant.WEBDRIVER.get();
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
@@ -263,8 +263,6 @@ public class BaseTest {
 
     @AfterMethod
     public void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
+        // Driver is closed in TestListener after taking screenshot
     }
 }

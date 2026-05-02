@@ -20,11 +20,13 @@ public class TestListener implements ITestListener {
     @Override
     public void onTestSuccess(ITestResult result) {
         test.get().log(Status.PASS, "Test Passed");
-        if (org.example.tests.Constant.WEBDRIVER != null) {
-            String path = org.example.utils.CaptureHelper.captureScreenshot(org.example.tests.Constant.WEBDRIVER, result.getName());
+        if (org.example.tests.Constant.WEBDRIVER.get() != null) {
+            String path = org.example.utils.CaptureHelper.captureScreenshot(org.example.tests.Constant.WEBDRIVER.get(), result.getName());
             if (path != null) {
                 test.get().addScreenCaptureFromPath(path);
             }
+            org.example.tests.Constant.WEBDRIVER.get().quit();
+            org.example.tests.Constant.WEBDRIVER.remove();
         }
     }
 
@@ -32,17 +34,23 @@ public class TestListener implements ITestListener {
     public void onTestFailure(ITestResult result) {
         test.get().log(Status.FAIL, "Test Failed");
         test.get().log(Status.FAIL, result.getThrowable());
-        if (org.example.tests.Constant.WEBDRIVER != null) {
-            String path = org.example.utils.CaptureHelper.captureScreenshot(org.example.tests.Constant.WEBDRIVER, result.getName());
+        if (org.example.tests.Constant.WEBDRIVER.get() != null) {
+            String path = org.example.utils.CaptureHelper.captureScreenshot(org.example.tests.Constant.WEBDRIVER.get(), result.getName());
             if (path != null) {
                 test.get().addScreenCaptureFromPath(path);
             }
+            org.example.tests.Constant.WEBDRIVER.get().quit();
+            org.example.tests.Constant.WEBDRIVER.remove();
         }
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
         test.get().log(Status.SKIP, "Test Skipped");
+        if (org.example.tests.Constant.WEBDRIVER.get() != null) {
+            org.example.tests.Constant.WEBDRIVER.get().quit();
+            org.example.tests.Constant.WEBDRIVER.remove();
+        }
     }
 
     @Override
