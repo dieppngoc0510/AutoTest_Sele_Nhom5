@@ -1,4 +1,5 @@
 package org.example.tests;
+import org.openqa.selenium.By;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -165,5 +166,119 @@ public class ChangePasswordTest extends BaseTest {
                 "FAIL: Không hiển thị lỗi khi để trống tất cả trường"
         );
         System.out.println("  → PASS: Hệ thống báo lỗi đúng khi để trống tất cả trường");
+    }
+
+    @Test(priority = 7,
+            description = "FE07_API01 – PUT /api/user/change-password – Đổi mật khẩu thành công")
+    public void API01_DoiMatKhauThanhCong() {
+        loginAsUser();
+        String body = "{\"old_password\":\"" + VALID_PASSWORD + "\"," +
+                "\"new_password\":\"NewPass@456_api!\"}";
+        log("Gọi PUT " + API_CHANGE_PW);
+        log("Request body: " + body);
+
+        String result = callChangePwAPI("PUT", body);
+        String status = statusOf(result);
+        String resp   = bodyOf(result);
+
+        log("API status : " + status);
+        log("API body   : " + resp);
+
+        // Chấp nhận 200 OK / 302 Redirect
+        boolean success = status.equals("200") || status.equals("302");
+        Assert.assertTrue(success,
+                "API PUT /change-password phải trả về 200/302, nhận: " + status);
+
+        if (status.equals("200")) {
+            boolean hasSuccessHint = resp.contains("thành công") || resp.contains("success") ||
+                    resp.contains("Password changed") || resp.contains("updated");
+            log("Body chứa dấu hiệu thành công: " + hasSuccessHint);
+        }
+
+        // ── Dọn dẹp: đặt lại mật khẩu ban đầu ──────────────
+        log("Reset lại mật khẩu ban đầu");
+        String resetBody = "{\"old_password\":\"NewPass@456_api!\"," +
+                "\"new_password\":\"" + VALID_PASSWORD + "\"}";
+        String resetResult = callChangePwAPI("PUT", resetBody);
+        log("Reset status: " + statusOf(resetResult));
+    }
+
+    @Test(priority = 8,
+            description = "FE07_API02 – PUT /api/user/change-password – Mật khẩu cũ sai")
+    public void API02_MatKhauCuSai() {
+        loginAsUser();
+        String body = "{\"old_password\":\"WrongPass@WrongWrong\",\"new_password\":\"NewPass@789!\"}";
+        log("Gọi PUT " + API_CHANGE_PW + " với mật khẩu cũ SAI");
+        log("Request body: " + body);
+
+        String result = callChangePwAPI("PUT", body);
+        String status = statusOf(result);
+        String resp   = bodyOf(result);
+
+        log("API status : " + status);
+        log("API body   : " + resp);
+
+        if (status.equals("400") || status.equals("422")) {
+            // ── REST API chuẩn ────────────────────────────────
+            boolean hasErrMsg = resp.contains("không đúng")    || resp.contains("không chính xác") ||
+                    resp.contains("incorrect")      || resp.contains("invalid") ||
+                    resp.contains("old_password")   || resp.contains("current_password");
+            Assert.assertTrue(hasErrMsg,
+                    "Response 400 phải chứa thông báo lỗi mật khẩu cũ sai");
+        } else if (status.equals("200") || status.equals("302")) {
+            // ── Django truyền thống ────────────────────────────
+            log("API trả " + status + " – kiểm tra mật khẩu không bị thay đổi qua UI");
+            // Thử đăng nhập lại bằng VALID_PASSWORD – nếu vẫn đăng nhập được thì mật khẩu chưa đổi
+            driver.get(BASE_URL + "/logout/");
+            driver.get(BASE_URL + "/login/");
+            waitFor(By.name("username")).sendKeys(VALID_USERNAME);
+            driver.findElement(By.name("password")).sendKeys(VALID_PASSWORD);
+            driver.findElement(By.cssSelector("button[type='submit']")).click();
+            try { Thread.sleep(800); } catch (InterruptedException ignored) {}
+            boolean stillLoggedIn = !driver.getCurrentUrl().contains("/login/");
+            log("Đăng nhập lại bằng mật khẩu cũ: " + (stillLoggedIn ? "THÀNH CÔNG ✓" : "THẤT BẠI ✗"));
+            Assert.assertTrue(stillLoggedIn,
+                    "Mật khẩu không được thay đổi khi nhập mật khẩu cũ sai");
+        } else {
+            Assert.fail("API trả trạng thái không mong đợi: " + status + " | body: " + resp);
+        }
+    }
+
+    @Test(priority = 9,
+            description = "FE07_API03 – PUT /api/user/change-password – Không có token xác thực")
+    public void API03_KhongCoToken() {
+        // KHÔNG đăng nhập – truy cập trang đổi mật khẩu
+        log("Truy cập " + CHANGE_PW_URL + " khi CHƯA đăng nhập");
+        driver.get(CHANGE_PW_URL);
+
+        boolean redirectLogin = driver.getCurrentUrl().contains("/login/") ||
+                driver.getCurrentUrl().contains("/signin/");
+        boolean showsLogin    = !driver.findElements(
+                By.cssSelector("input[name='username'], input[name='password']")).isEmpty();
+
+        log("Redirect login: " + redirectLogin);
+        log("Hiện form login: " + showsLogin);
+
+        // Gọi API trực tiếp không có session
+        String result    = callChangePwAPI("PUT",
+                "{\"old_password\":\"any\",\"new_password\":\"newpass123\"}");
+        String apiStatus = statusOf(result);
+        String apiBody   = bodyOf(result);
+        boolean apiBlocked = apiStatus.equals("401") || apiStatus.equals("403") ||
+                apiStatus.equals("302");
+
+        log("API (no session) – status: " + apiStatus + " | body: " + apiBody);
+
+        Assert.assertTrue(redirectLogin || showsLogin || apiBlocked,
+                "Khi chưa xác thực, phải redirect về login hoặc API trả 401/403");
+
+        if (apiStatus.equals("401") || apiStatus.equals("403")) {
+            log("API trả đúng " + apiStatus + " Unauthorized/Forbidden ✓");
+            boolean hasUnauthorized = apiBody.contains("Unauthorized") ||
+                    apiBody.contains("unauthorized")  ||
+                    apiBody.contains("Authentication") ||
+                    apiBody.contains("login");
+            log("Body chứa thông báo xác thực: " + hasUnauthorized);
+        }
     }
 }

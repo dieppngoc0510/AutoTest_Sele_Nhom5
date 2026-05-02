@@ -9,31 +9,31 @@ import java.util.List;
 
 public class OrdersPage extends BasePage {
 
-    @FindBy(css = "button.btn-create-order")
+    @FindBy(css = ".btn-create-custom, .btn-create-order, button[onclick*='create']")
     private WebElement createOrderBtn;
 
-    @FindBy(id = "customer-name")
+    @FindBy(xpath = "//input[contains(@id, 'name') or contains(@name, 'name')] | //*[contains(@class, 'customer-name')]")
     private WebElement customerNameInput;
-
-    @FindBy(id = "customer-phone")
+    
+    @FindBy(xpath = "//input[contains(@id, 'phone') or contains(@name, 'phone')] | //*[contains(@class, 'customer-phone')]")
     private WebElement customerPhoneInput;
-
-    @FindBy(id = "customer-address")
+    
+    @FindBy(xpath = "//textarea[contains(@id, 'address') or contains(@name, 'address')] | //input[contains(@id, 'address') or contains(@name, 'address')]")
     private WebElement customerAddressInput;
-
-    @FindBy(css = "input.search-product")
+    
+    @FindBy(xpath = "//input[contains(@class, 'search-product') or contains(@id, 'product-search')]")
     private WebElement productSearchInput;
 
-    @FindBy(css = ".product-result-item")
+    @FindBy(css = ".product-result-item, #product-search-results div, .search-result-item")
     private List<WebElement> productResults;
 
-    @FindBy(id = "payment-cash")
+    @FindBy(css = "#payment-cash, input[value='cash'], input[value='COD']")
     private WebElement cashRadio;
 
-    @FindBy(id = "payment-transfer")
+    @FindBy(css = "#payment-transfer, input[value='transfer'], input[value='banking']")
     private WebElement transferRadio;
 
-    @FindBy(css = "button.btn-submit-order")
+    @FindBy(css = "button.btn-submit-order, #btn-submit-order, button[type='submit']")
     private WebElement submitOrderBtn;
 
     @FindBy(css = "button.btn-cancel-order")
@@ -115,15 +115,23 @@ public class OrdersPage extends BasePage {
     }
 
     public void searchAndSelectProduct(String productName) {
-        productSearchInput.clear();
+        wait.until(ExpectedConditions.visibilityOf(productSearchInput)).clear();
         productSearchInput.sendKeys(productName);
-        wait.until(ExpectedConditions.visibilityOfAllElements(productResults));
-        productResults.get(0).click();
+        // Chờ kết quả tìm kiếm hiển thị
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".product-result-item, #product-search-results div, .search-result-item")));
+        List<WebElement> results = driver.findElements(By.cssSelector(".product-result-item, #product-search-results div, .search-result-item"));
+        if (!results.isEmpty()) {
+            wait.until(ExpectedConditions.elementToBeClickable(results.get(0))).click();
+        } else {
+            System.out.println("❌ Không tìm thấy sản phẩm: " + productName);
+        }
     }
 
     public void selectProductByName(String name, int quantity) {
         searchAndSelectProduct(name);
-        WebElement qtyInput = driver.findElement(By.xpath("//td[contains(text(),'" + name + "')]/..//input[@type='number']"));
+        // Tìm input số lượng của sản phẩm vừa thêm (dòng cuối cùng hoặc dòng chứa tên sp)
+        By qtyLocator = By.xpath("//td[contains(text(),'" + name + "')]/..//input[@type='number']");
+        WebElement qtyInput = wait.until(ExpectedConditions.visibilityOfElementLocated(qtyLocator));
         qtyInput.clear();
         qtyInput.sendKeys(String.valueOf(quantity));
     }

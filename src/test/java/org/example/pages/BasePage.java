@@ -1,5 +1,6 @@
 package org.example.pages;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.JavascriptExecutor;
@@ -26,5 +27,23 @@ public class BasePage {
         WebElement button = wait.until(ExpectedConditions.elementToBeClickable(cartIcon));
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
         wait.until(ExpectedConditions.attributeContains(org.openqa.selenium.By.id("cart-sidebar"), "class", "open"));
+    }
+
+    public void openUserMenu() {
+        WebElement toggle = wait.until(ExpectedConditions.elementToBeClickable(By.id("userMenuToggle")));
+        toggle.click();
+    }
+
+    public void clickLogout() {
+        WebElement logout = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#userMenuDropdown .logout-link")));
+        logout.click();
+    }
+
+    public boolean isUserMenuDisplayed() {
+        try {
+            return driver.findElement(By.id("userMenuDropdown")).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

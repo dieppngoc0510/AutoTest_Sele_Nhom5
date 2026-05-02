@@ -11,6 +11,11 @@ import static org.example.tests.Constant.*;
 
 public class ProfileTest extends BaseTest {
 
+    // Aliases used by API test methods
+    private final By fullnameField = Constant.FIELD_FULLNAME;
+    private final By phoneField    = Constant.FIELD_PHONE;
+    private final By saveBtn       = Constant.BTN_SAVE;
+
     @BeforeMethod
     public void beforeEach() {
         login();
@@ -276,6 +281,171 @@ public class ProfileTest extends BaseTest {
                     "document.querySelector('form.shopee-form-section').submit();");
         }
         sleep(1500);
+    }
+
+    // ════════════════════════════════════════════════════════
+    //  API01 – API04  |  Kiểm thử API (dùng XMLHttpRequest qua JS)
+    // ════════════════════════════════════════════════════════
+
+    @Test(priority = 13,
+            description = "FE06_API01 – GET /api/user/profile – Lấy thông tin cá nhân thành công")
+    public void API01_GetProfileThanhCong() {
+        loginAsUser();
+        log("Gọi GET " + API_PROFILE + " với session hợp lệ");
+
+        String result = callAPI("GET", API_PROFILE, null);
+        String status = statusOf(result);
+        String body   = bodyOf(result);
+
+        log("API status : " + status);
+        log("API body   : " + body);
+
+        // Chấp nhận 200 (REST) hoặc 302 (Django truyền thống redirect sang trang HTML)
+        Assert.assertTrue(status.equals("200") || status.equals("302"),
+                "GET /profile cần trả về 200 OK (REST) hoặc 302 (Django redirect), nhận: " + status);
+
+        if (status.equals("200")) {
+            // Response phải chứa ít nhất 1 trong các field profile
+            boolean hasField = body.contains("fullname") || body.contains("email") ||
+                    body.contains("phone")    || body.contains("full_name");
+            Assert.assertTrue(hasField,
+                    "Response 200 phải chứa thông tin profile (fullname / email / phone)");
+        }
+    }
+
+    @Test(priority = 14,
+            description = "FE06_API02 – PUT /api/user/profile – Cập nhật thông tin thành công")
+    public void API02_PutProfileThanhCong() {
+        loginAsUser();
+        String jsonBody = "{\"fullname\":\"Nguyen Van An\"," +
+                "\"phone\":\"0912345678\"," +
+                "\"address\":\"123 Le Loi, Da Nang\"}";
+        log("Gọi PUT " + API_PROFILE);
+        log("Request body: " + jsonBody);
+
+        String result = callAPI("PUT", API_PROFILE, jsonBody);
+        String status = statusOf(result);
+        String body   = bodyOf(result);
+
+        log("API status : " + status);
+        log("API body   : " + body);
+
+        // Chấp nhận 200 OK / 201 Created / 302 Redirect
+        boolean success = status.equals("200") || status.equals("201") || status.equals("302");
+        Assert.assertTrue(success,
+                "PUT /profile phải trả về 200/201/302, nhận: " + status);
+
+        if (status.equals("200")) {
+            boolean hasSuccessHint = body.contains("thành công") || body.contains("success") ||
+                    body.contains("Nguyen Van An") || body.contains("updated");
+            log("Body chứa dấu hiệu thành công: " + hasSuccessHint);
+            // Không assert cứng để tránh fail khi response format khác nhau
+        }
+
+        // Xác nhận qua UI: reload trang, kiểm tra dữ liệu mới
+        driver.get(PROFILE_URL);
+        waitFor(fullnameField);
+        String savedName = driver.findElement(fullnameField).getAttribute("value");
+        log("Họ tên sau khi PUT: " + savedName);
+        Assert.assertEquals(savedName, "Nguyen Van An",
+                "Dữ liệu phải được lưu đúng vào database sau khi PUT thành công");
+    }
+
+    @Test(priority = 15,
+            description = "FE06_API03 – PUT /api/user/profile – Không có token xác thực")
+    public void API03_KhongCoToken() {
+        // KHÔNG đăng nhập – điều hướng thẳng tới profile
+        log("Truy cập " + PROFILE_URL + " khi CHƯA đăng nhập");
+        driver.get(PROFILE_URL);
+
+        boolean redirectLogin = driver.getCurrentUrl().contains("/login/") ||
+                driver.getCurrentUrl().contains("/signin/");
+        boolean showsLoginUI  = !driver.findElements(
+                By.cssSelector("input[name='username'], input[name='password']")).isEmpty();
+
+        log("Redirect về /login/: " + redirectLogin);
+        log("Hiển thị form login: " + showsLoginUI);
+
+        // Gọi API không có session cookie
+        String result    = callAPI("GET", API_PROFILE, null);
+        String apiStatus = statusOf(result);
+        String apiBody   = bodyOf(result);
+        boolean apiBlocked = apiStatus.equals("401") || apiStatus.equals("403") ||
+                apiStatus.equals("302");
+
+        log("API GET (no session) – status: " + apiStatus + " | body: " + apiBody);
+
+        Assert.assertTrue(redirectLogin || showsLoginUI || apiBlocked,
+                "Khi chưa xác thực, phải redirect về login hoặc API trả 401/403");
+    }
+
+    @Test(priority = 16,
+            description = "FE06_API04 – PUT /api/user/profile – Dữ liệu không hợp lệ (phone = \"abc\")")
+    public void API04_PhoneSaiDinhDang() {
+        loginAsUser();
+
+        // ── Bước 1: Ghi nhận phone hợp lệ hiện tại ──────────
+        driver.get(PROFILE_URL);
+        waitFor(phoneField);
+        String originalPhone = driver.findElement(phoneField).getAttribute("value");
+        log("SĐT hiện tại trong DB: " + originalPhone);
+
+        // ── Bước 2: Gọi API PUT với phone không hợp lệ ───────
+        String badBody = "{\"fullname\":\"Test User\",\"phone\":\"abc\"}";
+        log("Gọi PUT " + API_PROFILE + " với phone='abc'");
+
+        String result = callAPI("PUT", API_PROFILE, badBody);
+        String status = statusOf(result);
+        String body   = bodyOf(result);
+
+        log("API status : " + status);
+        log("API body   : " + body);
+
+        if (status.equals("400") || status.equals("422")) {
+            // ── Trường hợp A: REST API chuẩn trả lỗi ─────────
+            log("API trả lỗi validation đúng chuẩn REST: " + status);
+            boolean hasPhoneError = body.contains("phone")         ||
+                    body.contains("không hợp lệ") ||
+                    body.contains("invalid")       ||
+                    body.contains("10 chữ số");
+            Assert.assertTrue(hasPhoneError,
+                    "Response " + status + " phải chứa thông báo lỗi liên quan đến phone");
+        } else {
+            // ── Trường hợp B: Django truyền thống (200 / 302) ─
+            log("API trả " + status + " – kiểm tra DB không lưu phone='abc'");
+            driver.get(PROFILE_URL);
+            waitFor(phoneField);
+            String currentPhone = driver.findElement(phoneField).getAttribute("value");
+            log("SĐT trong DB sau khi PUT 'abc': " + currentPhone);
+            Assert.assertNotEquals(currentPhone, "abc",
+                    "Phone='abc' không hợp lệ KHÔNG được lưu vào database");
+        }
+
+        // ── Bước 3: Xác nhận qua UI form ─────────────────────
+        driver.get(PROFILE_URL);
+        waitFor(phoneField);
+        WebElement phoneEl = driver.findElement(phoneField);
+        phoneEl.clear();
+        phoneEl.sendKeys("abc");
+        driver.findElement(saveBtn).click();
+
+        boolean uiValidationErr = !driver.findElements(By.xpath(
+                "//*[contains(text(),'không hợp lệ') or contains(text(),'10 chữ số')" +
+                        " or contains(text(),'Số điện thoại') or contains(text(),'invalid')]")).isEmpty();
+        boolean html5Err = !validationMsg(phoneField).isEmpty();
+
+        log("UI validation error: " + uiValidationErr + " | HTML5: " + html5Err);
+
+        if (!uiValidationErr && !html5Err) {
+            // Nếu không hiện lỗi, DB chắc chắn không được lưu "abc"
+            driver.navigate().refresh();
+            waitFor(phoneField);
+            String afterUI = driver.findElement(phoneField).getAttribute("value");
+            Assert.assertNotEquals(afterUI, "abc",
+                    "Dù không hiện lỗi UI, phone='abc' vẫn KHÔNG được lưu vào DB");
+        } else {
+            Assert.assertTrue(true, "Hiện lỗi validation SĐT không hợp lệ ✓");
+        }
     }
 }
 

@@ -1,12 +1,20 @@
 package org.example.pages;
 
-import org.example.tests.Constant;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import java.util.List;
 
-public class HomePage {
+public class HomePage extends BasePage {
+
+    public HomePage(WebDriver driver) {
+        super(driver);
+    }
+
+    public HomePage() {
+        super(org.example.tests.Constant.WEBDRIVER.get());
+    }
 
     // =======================================================
     // LOCATORS
@@ -24,11 +32,11 @@ public class HomePage {
     // METHODS
     // =======================================================
     public void open() {
-        Constant.WEBDRIVER.get().get("http://127.0.0.1:8000/");
+        driver.get("http://127.0.0.1:8000/");
     }
 
     public SearchResultPage searchProduct(String keyword) {
-        WebElement txtSearch = Constant.WEBDRIVER.get().findElement(_txtSearch);
+        WebElement txtSearch = driver.findElement(_txtSearch);
         txtSearch.clear();
         txtSearch.sendKeys(keyword);
         txtSearch.sendKeys(Keys.ENTER);
@@ -37,7 +45,7 @@ public class HomePage {
 
     // TC01: Kiểm tra cấu trúc thẻ sản phẩm (Bao gồm check linh hoạt giá mới/giá cũ)
     public boolean isProductListDisplayed() {
-        List<WebElement> cards = Constant.WEBDRIVER.get().findElements(_listProductCards);
+        List<WebElement> cards = driver.findElements(_listProductCards);
         if (cards.isEmpty()) {
             System.out.println("Không tìm thấy bất kỳ thẻ sản phẩm nào trên trang!");
             return false;
@@ -70,10 +78,10 @@ public class HomePage {
     // Hàm mở trang chi tiết theo vị trí (Cho TC04)
     public ProductDetailPage clickProductByIndex(int index) {
         try {
-            List<WebElement> images = Constant.WEBDRIVER.get().findElements(_listProductImages);
+            List<WebElement> images = driver.findElements(_listProductImages);
             if (images.size() > index) {
                 // Click bằng JS tránh bị lỗi Click intercepted
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER.get();
+                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
                 js.executeScript("arguments[0].click();", images.get(index));
                 System.out.println("Đã click vào sản phẩm ở vị trí index: " + index);
             }
@@ -85,7 +93,7 @@ public class HomePage {
 
     public void clickCategoryAo() {
         try {
-            Constant.WEBDRIVER.get().findElement(_menuCategoryAo).click();
+            driver.findElement(_menuCategoryAo).click();
             System.out.println("Đã click vào Menu danh mục Áo.");
         } catch (Exception e) {
             System.out.println("Lỗi: Không tìm thấy Menu Áo trên Navbar!");
@@ -94,7 +102,7 @@ public class HomePage {
 
     // TC03: Kiểm tra lọc danh mục
     public boolean areAllProductsBelongToCategory(String expectedKeyword) {
-        List<WebElement> names = Constant.WEBDRIVER.get().findElements(_listProductNames);
+        List<WebElement> names = driver.findElements(_listProductNames);
         if (names.isEmpty()) return false;
 
         String lowerKeyword = expectedKeyword.toLowerCase();
@@ -115,15 +123,15 @@ public class HomePage {
     private final By _btnLoadMore = By.xpath("//*[contains(text(), 'Xem thêm') or contains(text(), 'XEM THÊM') or contains(@class, 'load-more')]");
 
     public int getProductCount() {
-        return Constant.WEBDRIVER.get().findElements(_listProductCards).size();
+        return driver.findElements(_listProductCards).size();
     }
 
     public void clickLoadMoreButton() {
         try {
-            List<WebElement> btns = Constant.WEBDRIVER.get().findElements(_btnLoadMore);
+            List<WebElement> btns = driver.findElements(_btnLoadMore);
             if (!btns.isEmpty() && btns.get(0).isDisplayed()) {
                 WebElement btn = btns.get(0);
-                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) Constant.WEBDRIVER.get();
+                org.openqa.selenium.JavascriptExecutor js = (org.openqa.selenium.JavascriptExecutor) driver;
                 js.executeScript("arguments[0].scrollIntoView(true);", btn);
                 Thread.sleep(1000); // Đợi scroll mượt
                 js.executeScript("arguments[0].click();", btn);

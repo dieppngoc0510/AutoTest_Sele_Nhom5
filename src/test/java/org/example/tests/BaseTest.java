@@ -55,8 +55,16 @@ public class BaseTest {
     protected void loginAsAdmin() {
         getUrl(BASE_URL + "login/");
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.login("admin", "admin");
-        wait.until(d -> !d.getCurrentUrl().contains("login/"));
+        // Thử dùng mật khẩu hani12345 nếu admin/admin không thành công
+        loginPage.login("admin", "hani12345");
+        try {
+            wait.until(d -> !d.getCurrentUrl().contains("login/"));
+        } catch (TimeoutException e) {
+            // Nếu vẫn ở trang login, thử lại với admin/admin
+            getUrl(BASE_URL + "login/");
+            loginPage.login("admin", "admin");
+            wait.until(d -> !d.getCurrentUrl().contains("login/"));
+        }
     }
 
     protected void openHomePage() {
@@ -344,5 +352,75 @@ public class BaseTest {
         try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Helpers for ProfileTest / ChangePasswordTest
+    // ─────────────────────────────────────────────────────────────────────────
 
+    /** Login as the default regular user used in API tests */
+    protected void loginAsUser() {
+        login(Constant.VALID_USERNAME, Constant.VALID_PASSWORD);
+    }
+
+    /** Simple console logger */
+    protected void log(String msg) {
+        System.out.println("  [LOG] " + msg);
+    }
+
+    /** Wait until element is visible, then return it */
+    protected WebElement waitFor(By locator) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    /**
+     * Call an HTTP API endpoint via JavaScript (XMLHttpRequest) using the
+     * browser's current session cookie.  Returns "STATUS|BODY".
+     */
+    protected String callAPI(String method, String endpoint, String jsonBody) {
+        String base = BASE_URL.endsWith("/") ? BASE_URL.substring(0, BASE_URL.length() - 1) : BASE_URL;
+        String url  = endpoint.startsWith("http") ? endpoint : base + endpoint;
+        String body = (jsonBody == null) ? "null" : "'" + jsonBody.replace("'", "\\'") + "'";
+        String script =
+            "var xhr = new XMLHttpRequest();" +
+            "xhr.open('" + method + "', '" + url + "', false);" +
+            "xhr.setRequestHeader('Content-Type','application/json');" +
+            "xhr.setRequestHeader('X-CSRFToken', document.cookie.split(';')" +
+            "  .map(c=>c.trim()).filter(c=>c.startsWith('csrftoken='))" +
+            "  .map(c=>c.split('=')[1])[0]||'');" +
+            "xhr.send(" + body + ");" +
+            "return xhr.status + '|' + xhr.responseText;";
+        Object result = ((JavascriptExecutor) driver).executeScript(script);
+        return result == null ? "0|" : result.toString();
+    }
+
+    /** Convenience wrapper for change-password API */
+    protected String callChangePwAPI(String method, String jsonBody) {
+        return callAPI(method, Constant.API_CHANGE_PW, jsonBody);
+    }
+
+    /** Extract HTTP status code from "STATUS|BODY" string */
+    protected String statusOf(String result) {
+        if (result == null || !result.contains("|")) return "0";
+        return result.split("\\|", 2)[0].trim();
+    }
+
+    /** Extract response body from "STATUS|BODY" string */
+    protected String bodyOf(String result) {
+        if (result == null || !result.contains("|")) return "";
+        return result.split("\\|", 2)[1];
+    }
+
+    /**
+     * Returns the browser's built-in HTML5 validation message for a field,
+     * or empty string if none.
+     */
+    protected String validationMsg(By locator) {
+        try {
+            WebElement el = driver.findElement(locator);
+            Object msg = ((JavascriptExecutor) driver)
+                    .executeScript("return arguments[0].validationMessage;", el);
+            return msg == null ? "" : msg.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
 }

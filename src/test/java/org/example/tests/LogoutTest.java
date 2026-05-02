@@ -30,8 +30,9 @@ public class LogoutTest extends BaseTest {
 
         // 2. Kiểm tra chuyển hướng về trang chủ sau khi đăng xuất
         String currentUrl = driver.getCurrentUrl();
+        String expectedUrl = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
         Assert.assertTrue(
-                currentUrl.equals(BASE_URL) || currentUrl.equals(BASE_URL + "/"),
+                currentUrl.equals(expectedUrl) || currentUrl.equals(expectedUrl.substring(0, expectedUrl.length() - 1)),
                 "Hệ thống không chuyển hướng về trang chủ sau khi đăng xuất. URL hiện tại: " + currentUrl
         );
     }
@@ -53,13 +54,14 @@ public class LogoutTest extends BaseTest {
 
         // 2. Xác nhận đã về trang chủ
         String homeUrl = driver.getCurrentUrl();
+        String expectedUrl = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
         Assert.assertTrue(
-                homeUrl.equals(BASE_URL) || homeUrl.equals(BASE_URL + "/"),
+                homeUrl.equals(expectedUrl) || homeUrl.equals(expectedUrl.substring(0, expectedUrl.length() - 1)),
                 "Hệ thống không chuyển hướng về trang chủ sau khi đăng xuất. URL hiện tại: " + homeUrl
         );
 
         // 3. Thử truy cập trực tiếp URL trang thông tin cá nhân
-        driver.get(BASE_URL + "user/profile");
+        driver.get(BASE_URL + "profile/");
 
         // 4. Hệ thống phải đẩy về trang đăng nhập để bảo mật
         Assert.assertTrue(driver.getCurrentUrl().contains("/login"),
@@ -73,8 +75,9 @@ public class LogoutTest extends BaseTest {
 
         // 1. Xác nhận đã về trang chủ
         String homeUrl = driver.getCurrentUrl();
+        String expectedUrl = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
         Assert.assertTrue(
-                homeUrl.equals(BASE_URL) || homeUrl.equals(BASE_URL + "/"),
+                homeUrl.equals(expectedUrl) || homeUrl.equals(expectedUrl.substring(0, expectedUrl.length() - 1)),
                 "Hệ thống không chuyển hướng về trang chủ sau khi đăng xuất. URL hiện tại: " + homeUrl
         );
 
@@ -84,10 +87,11 @@ public class LogoutTest extends BaseTest {
 
         // 3. Không được thấy nội dung cũ của người dùng, phải ở trang login hoặc trang chủ (chưa đăng nhập)
         String urlAfterBack = driver.getCurrentUrl();
+        String expectedHome = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
         Assert.assertTrue(
                 urlAfterBack.contains("/login")
-                        || urlAfterBack.equals(BASE_URL)
-                        || urlAfterBack.equals(BASE_URL + "/"),
+                        || urlAfterBack.equals(expectedHome)
+                        || urlAfterBack.equals(expectedHome.substring(0, expectedHome.length() - 1)),
                 "Nút Back vẫn cho phép quay lại nội dung cá nhân sau khi đăng xuất. URL: " + urlAfterBack
         );
     }
@@ -107,8 +111,9 @@ public class LogoutTest extends BaseTest {
 
         // 3. Xác nhận đã về trang chủ
         String homeUrl = driver.getCurrentUrl();
+        String expectedUrl = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
         Assert.assertTrue(
-                homeUrl.equals(BASE_URL) || homeUrl.equals(BASE_URL + "/"),
+                homeUrl.equals(expectedUrl) || homeUrl.equals(expectedUrl.substring(0, expectedUrl.length() - 1)),
                 "Hệ thống không chuyển hướng về trang chủ sau khi đăng xuất. URL hiện tại: " + homeUrl
         );
 
