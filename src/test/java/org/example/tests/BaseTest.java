@@ -18,6 +18,9 @@ import org.testng.annotations.BeforeMethod;
 import java.time.Duration;
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+import static org.example.tests.Constant.TOAST;
+
 public class BaseTest {
     protected static final String BASE_URL = "http://127.0.0.1:8000/";
 
@@ -265,4 +268,71 @@ public class BaseTest {
     public void tearDown() {
         // Driver is closed in TestListener after taking screenshot
     }
+
+
+
+
+
+    protected void login() {
+        loginAsDefaultUser();
+    }
+    /** Vào trang Thông tin cá nhân */
+    protected void goToProfile() {
+        driver.get(BASE_URL + "/profile/");
+        sleep(1000);
+    }
+
+    /** Vào trang Đổi mật khẩu */
+    protected void goToChangePassword() {
+        driver.get(BASE_URL + "/change-password/");
+        sleep(1000);
+    }
+    protected void login(String username, String password) {
+        getUrl(BASE_URL + "login/");
+        LoginPage loginPage = new LoginPage(driver);
+        loginPage.login(username, password);
+        wait.until(d -> !d.getCurrentUrl().contains("login/"));
+    }
+
+    /**
+     * Lấy nội dung toast notification.
+     */
+    protected String getToastMessage() {
+        try {
+            WebElement toast = wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(TOAST));
+            return toast.getText().toLowerCase();
+        } catch (Exception e) {
+            return driver.getPageSource().toLowerCase();
+        }
+    }
+
+    /** Kiểm tra có thông báo thành công không */
+    protected boolean isSuccess() {
+        String msg = getToastMessage();
+        return msg.contains("thành công") || msg.contains("success")
+                || msg.contains("updated") || msg.contains("cập nhật");
+    }
+
+    /** Kiểm tra trang có chứa một trong các từ khóa lỗi không */
+    protected boolean pageContainsError(String... keywords) {
+        String src = driver.getPageSource().toLowerCase();
+        for (String kw : keywords) {
+            if (src.contains(kw.toLowerCase())) return true;
+        }
+        return false;
+    }
+
+    /** Xóa và nhập giá trị mới vào input */
+    protected void clearAndType(By locator, String value) {
+        WebElement el = driver.findElement(locator);
+        el.clear();
+        el.sendKeys(value);
+    }
+
+    protected void sleep(long ms) {
+        try { Thread.sleep(ms); } catch (InterruptedException ignored) {}
+    }
+
+
 }
