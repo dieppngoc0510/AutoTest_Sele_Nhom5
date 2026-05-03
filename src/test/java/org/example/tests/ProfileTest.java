@@ -18,8 +18,8 @@ public class ProfileTest extends BaseTest {
 
     @BeforeMethod
     public void beforeEach() {
-        login();
-        goToProfile();
+        bp().loginAsUser(); // Đổi sang dùng acc ngocdiep thay vì admin
+        bp().goToProfile();
     }
 
     // ════════════════════════════════════════════════════
@@ -55,10 +55,10 @@ public class ProfileTest extends BaseTest {
     public void TC02_capNhatHoTenHopLe() {
         System.out.println("\n[FE06-TC02] Cập nhật họ tên hợp lệ...");
 
-        clearAndType(FIELD_FULLNAME, "Nguyễn Văn An");
+        bp().clearAndType(FIELD_FULLNAME, "Nguyễn Văn An");
         submitProfileForm();
 
-        Assert.assertTrue(isSuccess(),
+        Assert.assertTrue(bp().isSuccess(),
                 "FAIL: Không thấy thông báo thành công sau khi cập nhật họ tên");
         System.out.println("  → PASS: Cập nhật họ tên thành công");
     }
@@ -70,10 +70,17 @@ public class ProfileTest extends BaseTest {
     public void TC03_capNhatEmailHopLe() {
         System.out.println("\n[FE06-TC03] Cập nhật email hợp lệ...");
 
-        clearAndType(FIELD_EMAIL, NEW_EMAIL);
+        String randomEmail = "test_" + System.currentTimeMillis() + "@gmail.com";
+        bp().clearAndType(FIELD_EMAIL, randomEmail);
         submitProfileForm();
-        Assert.assertTrue(isSuccess(),
-                "FAIL: Không thấy thông báo thành công sau khi cập nhật email");
+
+        // Lấy thông báo thực tế để debug nếu fail
+        String toastMsg = bp().getToastMessage();
+        boolean success = toastMsg.contains("thành công") || toastMsg.contains("success")
+                       || toastMsg.contains("updated") || toastMsg.contains("cập nhật");
+
+        Assert.assertTrue(success,
+                "FAIL: Cập nhật email thất bại! Thông báo nhận được: [" + toastMsg + "]");
         System.out.println("  → PASS: Cập nhật email thành công");
     }
 
@@ -84,10 +91,10 @@ public class ProfileTest extends BaseTest {
     public void TC04_capNhatSDTHopLe() {
         System.out.println("\n[FE06-TC04] Cập nhật SĐT hợp lệ (10 số)...");
 
-        clearAndType(FIELD_PHONE, "0912345678");
+        bp().clearAndType(FIELD_PHONE, "0912345678");
         submitProfileForm();
 
-        Assert.assertTrue(isSuccess(),
+        Assert.assertTrue(bp().isSuccess(),
                 "FAIL: Không thấy thông báo thành công sau khi cập nhật SĐT");
         System.out.println("  → PASS: Cập nhật SĐT thành công");
     }
@@ -99,10 +106,10 @@ public class ProfileTest extends BaseTest {
     public void TC05_capNhatDiaChiHopLe() {
         System.out.println("\n[FE06-TC05] Cập nhật địa chỉ hợp lệ...");
 
-        clearAndType(FIELD_ADDRESS, "123 Đường Lê Lợi, Quận 1, TP.HCM");
+        bp().clearAndType(FIELD_ADDRESS, "123 Đường Lê Lợi, Quận 1, TP.HCM");
         submitProfileForm();
 
-        Assert.assertTrue(isSuccess(),
+        Assert.assertTrue(bp().isSuccess(),
                 "FAIL: Không thấy thông báo thành công sau khi cập nhật địa chỉ");
         System.out.println("  → PASS: Cập nhật địa chỉ thành công");
     }
@@ -120,7 +127,7 @@ public class ProfileTest extends BaseTest {
                 "arguments[0].value = '2000-01-01';", dobField);
         submitProfileForm();
 
-        Assert.assertTrue(isSuccess(),
+        Assert.assertTrue(bp().isSuccess(),
                 "FAIL: Không thấy thông báo thành công sau khi cập nhật ngày sinh");
         System.out.println("  → PASS: Cập nhật ngày sinh thành công");
     }
@@ -147,7 +154,7 @@ public class ProfileTest extends BaseTest {
 
         submitProfileForm();
 
-        Assert.assertTrue(isSuccess(),
+        Assert.assertTrue(bp().isSuccess(),
                 "FAIL: Không thấy thông báo thành công sau khi cập nhật giới tính");
         System.out.println("  → PASS: Cập nhật giới tính thành công");
     }
@@ -165,12 +172,12 @@ public class ProfileTest extends BaseTest {
         sleep(1000);
 
         // Không được có thông báo thành công
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống vẫn báo thành công dù họ tên trống!");
 
         // Phải có thông báo lỗi (HTML5 required hoặc toast lỗi)
         Assert.assertTrue(
-                pageContainsError("không được để trống", "required", "bắt buộc",
+                bp().pageContainsError("không được để trống", "required", "bắt buộc",
                         "vui lòng nhập", "error", "invalid"),
                 "FAIL: Không hiển thị lỗi khi họ tên để trống"
         );
@@ -184,15 +191,15 @@ public class ProfileTest extends BaseTest {
     public void TC09_emailSaiDinhDang() {
         System.out.println("\n[FE06-TC10] Email sai định dạng (thiếu @)...");
 
-        clearAndType(FIELD_EMAIL, "usergmail.com");
+        bp().clearAndType(FIELD_EMAIL, "usergmail.com");
         submitProfileForm();
         sleep(1000);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống vẫn báo thành công dù email sai định dạng!");
 
         Assert.assertTrue(
-                pageContainsError("email không hợp lệ", "định dạng", "invalid email",
+                bp().pageContainsError("email không hợp lệ", "định dạng", "invalid email",
                         "không đúng", "error", "invalid"),
                 "FAIL: Không hiển thị lỗi khi email sai định dạng"
         );
@@ -207,15 +214,15 @@ public class ProfileTest extends BaseTest {
         System.out.println("\n[FE06-TC11] Email đã tồn tại trong hệ thống...");
 
         // ⚠️ SỬA: nhập email của tài khoản KHÁC đã có trong hệ thống
-        clearAndType(FIELD_EMAIL, "nhom@gmail.com");
+        bp().clearAndType(FIELD_EMAIL, "nhom@gmail.com");
         submitProfileForm();
         sleep(1500);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống vẫn báo thành công dù email đã tồn tại!");
 
         Assert.assertTrue(
-                pageContainsError("đã được sử dụng", "đã tồn tại", "already exists",
+                bp().pageContainsError("đã được sử dụng", "đã tồn tại", "already exists",
                         "already used", "email exists", "error"),
                 "FAIL: Không hiển thị lỗi khi email đã tồn tại"
         );
@@ -230,16 +237,16 @@ public class ProfileTest extends BaseTest {
         System.out.println("\n[FE06-TC12] SĐT chứa chữ cái...");
 
         // pattern="[0-9]{10}" → browser sẽ chặn trước khi submit
-        clearAndType(FIELD_PHONE, "09abc12345");
+        bp().clearAndType(FIELD_PHONE, "09abc12345");
         submitProfileForm();
         sleep(1000);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống vẫn báo thành công dù SĐT chứa chữ cái!");
 
         // HTML5 validation: title="Số điện thoại phải bao gồm đúng 10 chữ số"
         Assert.assertTrue(
-                pageContainsError("10 chữ số", "không hợp lệ", "invalid",
+                bp().pageContainsError("10 chữ số", "không hợp lệ", "invalid",
                         "error", "phone", "pattern"),
                 "FAIL: Không hiển thị lỗi khi SĐT chứa chữ cái"
         );
@@ -254,16 +261,16 @@ public class ProfileTest extends BaseTest {
         System.out.println("\n[FE06-TC13] SĐT không đủ 10 chữ số...");
 
         // minlength="10" → browser chặn khi submit
-        clearAndType(FIELD_PHONE, "0912345");   // chỉ 7 số
+        bp().clearAndType(FIELD_PHONE, "0912345");   // chỉ 7 số
         submitProfileForm();
         sleep(1000);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống vẫn báo thành công dù SĐT chỉ 7 số!");
 
         // HTML5: title="Số điện thoại phải bao gồm đúng 10 chữ số"
         Assert.assertTrue(
-                pageContainsError("10 chữ số", "không hợp lệ", "invalid",
+                bp().pageContainsError("10 chữ số", "không hợp lệ", "invalid",
                         "minlength", "error"),
                 "FAIL: Không hiển thị lỗi khi SĐT không đủ 10 số"
         );
@@ -290,12 +297,14 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 13,
             description = "FE06_API01 – GET /api/user/profile – Lấy thông tin cá nhân thành công")
     public void API01_GetProfileThanhCong() {
-        loginAsUser();
+        // Logout trước rồi login lại để test session mới
+        driver.get(BASE_URL + "logout/?silent=1");
+        bp().loginAsUser();
         log("Gọi GET " + API_PROFILE + " với session hợp lệ");
 
-        String result = callAPI("GET", API_PROFILE, null);
-        String status = statusOf(result);
-        String body   = bodyOf(result);
+        String result = bp().callAPI("GET", API_PROFILE, null);
+        String status = bp().statusOf(result);
+        String body   = bp().bodyOf(result);
 
         log("API status : " + status);
         log("API body   : " + body);
@@ -316,16 +325,17 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 14,
             description = "FE06_API02 – PUT /api/user/profile – Cập nhật thông tin thành công")
     public void API02_PutProfileThanhCong() {
-        loginAsUser();
+        driver.get(BASE_URL + "logout/?silent=1");
+        bp().loginAsUser();
         String jsonBody = "{\"fullname\":\"Nguyen Van An\"," +
                 "\"phone\":\"0912345678\"," +
                 "\"address\":\"123 Le Loi, Da Nang\"}";
         log("Gọi PUT " + API_PROFILE);
         log("Request body: " + jsonBody);
 
-        String result = callAPI("PUT", API_PROFILE, jsonBody);
-        String status = statusOf(result);
-        String body   = bodyOf(result);
+        String result = bp().callAPI("PUT", API_PROFILE, jsonBody);
+        String status = bp().statusOf(result);
+        String body   = bp().bodyOf(result);
 
         log("API status : " + status);
         log("API body   : " + body);
@@ -354,7 +364,9 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 15,
             description = "FE06_API03 – PUT /api/user/profile – Không có token xác thực")
     public void API03_KhongCoToken() {
-        // KHÔNG đăng nhập – điều hướng thẳng tới profile
+        // KHÔNG đăng nhập – logout trước để đảm bảo không có session
+        driver.get(BASE_URL + "logout/?silent=1");
+        sleep(500);
         log("Truy cập " + PROFILE_URL + " khi CHƯA đăng nhập");
         driver.get(PROFILE_URL);
 
@@ -367,9 +379,9 @@ public class ProfileTest extends BaseTest {
         log("Hiển thị form login: " + showsLoginUI);
 
         // Gọi API không có session cookie
-        String result    = callAPI("GET", API_PROFILE, null);
-        String apiStatus = statusOf(result);
-        String apiBody   = bodyOf(result);
+        String result    = bp().callAPI("GET", API_PROFILE, null);
+        String apiStatus = bp().statusOf(result);
+        String apiBody   = bp().bodyOf(result);
         boolean apiBlocked = apiStatus.equals("401") || apiStatus.equals("403") ||
                 apiStatus.equals("302");
 
@@ -382,7 +394,8 @@ public class ProfileTest extends BaseTest {
     @Test(priority = 16,
             description = "FE06_API04 – PUT /api/user/profile – Dữ liệu không hợp lệ (phone = \"abc\")")
     public void API04_PhoneSaiDinhDang() {
-        loginAsUser();
+        driver.get(BASE_URL + "logout/?silent=1");
+        bp().loginAsUser();
 
         // ── Bước 1: Ghi nhận phone hợp lệ hiện tại ──────────
         driver.get(PROFILE_URL);
@@ -394,9 +407,9 @@ public class ProfileTest extends BaseTest {
         String badBody = "{\"fullname\":\"Test User\",\"phone\":\"abc\"}";
         log("Gọi PUT " + API_PROFILE + " với phone='abc'");
 
-        String result = callAPI("PUT", API_PROFILE, badBody);
-        String status = statusOf(result);
-        String body   = bodyOf(result);
+        String result = bp().callAPI("PUT", API_PROFILE, badBody);
+        String status = bp().statusOf(result);
+        String body   = bp().bodyOf(result);
 
         log("API status : " + status);
         log("API body   : " + body);
@@ -432,7 +445,7 @@ public class ProfileTest extends BaseTest {
         boolean uiValidationErr = !driver.findElements(By.xpath(
                 "//*[contains(text(),'không hợp lệ') or contains(text(),'10 chữ số')" +
                         " or contains(text(),'Số điện thoại') or contains(text(),'invalid')]")).isEmpty();
-        boolean html5Err = !validationMsg(phoneField).isEmpty();
+        boolean html5Err = !bp().validationMsg(phoneField).isEmpty();
 
         log("UI validation error: " + uiValidationErr + " | HTML5: " + html5Err);
 

@@ -1,6 +1,7 @@
 package org.example.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -33,48 +34,48 @@ public class OrdersPage extends BasePage {
     @FindBy(css = "#payment-transfer, input[value='transfer'], input[value='banking']")
     private WebElement transferRadio;
 
-    @FindBy(css = "button.btn-submit-order, #btn-submit-order, button[type='submit']")
+    @FindBy(css = "button[type='submit'], .mockup-btn-primary")
     private WebElement submitOrderBtn;
 
-    @FindBy(css = "button.btn-cancel-order")
+    @FindBy(xpath = "//button[contains(text(), 'Huỷ')]")
     private WebElement cancelOrderBtn;
 
-    @FindBy(css = "button.btn-add-more")
+    @FindBy(css = ".btn-create-add")
     private WebElement addMoreBtn;
 
-    @FindBy(css = ".total-amount-display")
+    @FindBy(id = "txt-total")
     private WebElement totalAmountText;
 
-    @FindBy(css = ".order-modal")
+    @FindBy(id = "create-order-modal")
     private WebElement orderModal;
 
-    @FindBy(css = "table.order-table tbody tr:first-child .status-label")
+    @FindBy(css = "table.order-table tbody tr:first-child td:nth-child(6) span")
     private WebElement firstOrderStatus;
 
-    @FindBy(css = ".error-message")
-    private WebElement errorMessage;
+    @FindBy(css = "[id^='err-']")
+    private List<WebElement> errorMessages;
 
     // ── Locators cho chức năng xóa đơn hàng ──────────────────────────────────
 
-    @FindBy(css = "table.order-table tbody tr:first-child .btn-delete-order")
+    @FindBy(css = "table.order-table tbody tr:first-child .fa-trash-alt, table tbody tr:first-child .fa-trash-alt, table tbody tr:first-child button.btn-delete")
     private WebElement deleteFirstOrderBtn;
 
-    @FindBy(css = ".modal-confirm-delete")
+    @FindBy(css = ".modal-content, #deleteOrderModal .modal-content")
     private WebElement confirmDeleteModal;
 
-    @FindBy(css = ".modal-confirm-delete .modal-body")
+    @FindBy(css = ".modal-body, .modal-confirm-body, .modal-message")
     private WebElement confirmDeleteMessage;
 
-    @FindBy(css = ".modal-confirm-delete button.btn-confirm-delete")
+    @FindBy(xpath = "//*[contains(@class, 'modal-content')]//*[@id='del-btn-confirm' or contains(@class, 'btn-danger')]")
     private WebElement confirmDeleteBtn;
-
-    @FindBy(css = ".modal-confirm-delete button.btn-cancel-delete")
+    
+    @FindBy(xpath = "//*[contains(@class, 'modal-content')]//button[(contains(@class, 'btn-secondary') or contains(@class, 'btn-cancel')) and (contains(text(), 'Huỷ') or contains(text(), 'Hủy'))]")
     private WebElement cancelDeleteBtn;
 
-    @FindBy(css = ".modal-confirm-delete button.btn-close-modal")
+    @FindBy(css = "button.close")
     private WebElement closeDeleteModalBtn;
 
-    @FindBy(css = "table.order-table tbody tr")
+    @FindBy(css = "table.order-table tbody tr, table tbody tr")
     private List<WebElement> orderRows;
 
     public OrdersPage(WebDriver driver) {
@@ -82,7 +83,8 @@ public class OrdersPage extends BasePage {
     }
 
     public void clickCreateOrder() {
-        wait.until(ExpectedConditions.elementToBeClickable(createOrderBtn)).click();
+        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(createOrderBtn));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
     }
 
     public void fillOrderInfo(String name, String phone, String address) {
@@ -129,31 +131,39 @@ public class OrdersPage extends BasePage {
 
     public void selectProductByName(String name, int quantity) {
         searchAndSelectProduct(name);
-        // Tìm input số lượng của sản phẩm vừa thêm (dòng cuối cùng hoặc dòng chứa tên sp)
-        By qtyLocator = By.xpath("//td[contains(text(),'" + name + "')]/..//input[@type='number']");
-        WebElement qtyInput = wait.until(ExpectedConditions.visibilityOfElementLocated(qtyLocator));
-        qtyInput.clear();
-        qtyInput.sendKeys(String.valueOf(quantity));
+        // Find the row for the product and use the stepper to set quantity
+        WebElement row = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//tbody[@id='create-order-tbody']/tr[td[1]//select/option[@selected and contains(text(), '" + name + "')] or td[1]//select/option[text()='" + name + "']] | //tbody[@id='create-order-tbody']/tr[last()]")
+        ));
+        
+        WebElement qtyVal = row.findElement(By.cssSelector(".stepper-val"));
+        WebElement plusBtn = row.findElement(By.xpath(".//button[text()='+']"));
+        
+        int currentQty = Integer.parseInt(qtyVal.getText());
+        while (currentQty < quantity) {
+            plusBtn.click();
+            currentQty++;
+        }
     }
 
     public void addMoreProductField() {
-        addMoreBtn.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", addMoreBtn);
     }
 
     public void selectPaymentCash() {
-        cashRadio.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", cashRadio);
     }
-
+    
     public void selectPaymentTransfer() {
-        transferRadio.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", transferRadio);
     }
-
+    
     public void clickSubmitOrder() {
-        submitOrderBtn.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", submitOrderBtn);
     }
-
+    
     public void clickCancelButton() {
-        cancelOrderBtn.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", cancelOrderBtn);
     }
 
     public String getFirstOrderStatus() {
@@ -161,11 +171,10 @@ public class OrdersPage extends BasePage {
     }
 
     public boolean isErrorMessageDisplayed() {
-        try {
-            return errorMessage.isDisplayed();
-        } catch (Exception e) {
-            return false;
+        for (WebElement msg : errorMessages) {
+            if (msg.isDisplayed()) return true;
         }
+        return false;
     }
 
     public String getTotalAmountCalculated() {
@@ -180,15 +189,27 @@ public class OrdersPage extends BasePage {
 
     /** Mở trang danh sách đơn hàng */
     public void open(String baseUrl) {
-        driver.get(baseUrl + "panel/orders");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("table.order-table")));
+        String targetUrl = baseUrl;
+        if (!targetUrl.endsWith("/")) targetUrl += "/";
+        targetUrl += "panel/orders";
+        
+        driver.get(targetUrl);
+        
+        // Đợi trang tải xong
+        wait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+        
+        // Chờ bảng hoặc nút tạo đơn xuất hiện (tùy cái nào đến trước)
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("table.order-table")),
+                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".btn-create-order")),
+                ExpectedConditions.visibilityOfElementLocated(By.tagName("table"))
+        ));
     }
 
     /** Số dòng đơn hàng hiện có trong bảng */
     public int getOrderCount() {
         try {
-            return driver.findElements(By.cssSelector("table.order-table tbody tr")).size();
+            return driver.findElements(By.cssSelector("table.order-table tbody tr, table tbody tr")).size();
         } catch (Exception e) {
             return 0;
         }
@@ -196,7 +217,8 @@ public class OrdersPage extends BasePage {
 
     /** Nhấn nút xóa của đơn hàng đầu tiên trong bảng */
     public void clickDeleteFirstOrder() {
-        wait.until(ExpectedConditions.elementToBeClickable(deleteFirstOrderBtn)).click();
+        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(deleteFirstOrderBtn));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
     }
 
     /** Kiểm tra modal xác nhận xóa có hiển thị không */
@@ -221,6 +243,11 @@ public class OrdersPage extends BasePage {
     /** Kiểm tra modal có đủ 2 nút Hủy và Xóa không */
     public boolean isConfirmDeleteHasTwoButtons() {
         try {
+            // Đảm bảo modal đã hiện trước khi tìm nút
+            wait.until(ExpectedConditions.visibilityOf(confirmDeleteModal));
+            // Chờ cả 2 nút hiển thị và có text
+            wait.until(ExpectedConditions.visibilityOf(cancelDeleteBtn));
+            wait.until(ExpectedConditions.visibilityOf(confirmDeleteBtn));
             return cancelDeleteBtn.isDisplayed() && confirmDeleteBtn.isDisplayed();
         } catch (Exception e) {
             return false;
@@ -237,6 +264,8 @@ public class OrdersPage extends BasePage {
     public void clickCancelDelete() {
         wait.until(ExpectedConditions.elementToBeClickable(cancelDeleteBtn)).click();
         wait.until(ExpectedConditions.invisibilityOf(confirmDeleteModal));
+        // Đợi thêm một chút để hiệu ứng đóng modal hoàn tất và bảng ổn định
+        try { Thread.sleep(500); } catch (InterruptedException ignored) {}
     }
 
     /** Nhấn nút X đóng modal */

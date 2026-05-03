@@ -13,8 +13,8 @@ public class ChangePasswordTest extends BaseTest {
 
     @BeforeMethod
     public void beforeEach() {
-        login();
-        goToChangePassword();
+        bp().login();
+        bp().goToChangePassword();
     }
 
     // ════════════════════════════════════════════════════
@@ -31,20 +31,24 @@ public class ChangePasswordTest extends BaseTest {
 
         sleep(2000);
 
-        Assert.assertTrue(isSuccess(),
+        Assert.assertTrue(bp().isSuccess(),
                 "FAIL: Không thấy thông báo thành công sau khi đổi mật khẩu");
-        System.out.println("  → PASS: Đổi mật khẩu thành công");
+        System.out.println("  \u2192 PASS: Đổi mật khẩu thành công");
 
         // Đổi lại mật khẩu cũ để không ảnh hưởng TC khác
-        System.out.println("  → Khôi phục mật khẩu cũ...");
-        login(TEST_USERNAME, NEW_VALID_PW);
-        goToChangePassword();
+        System.out.println("  \u2192 Khôi phục mật khẩu cũ...");
+        sleep(1000); // chờ server redirect về /login/
+        // Server đã redirect sang /login/, dùng LoginPage trực tiếp
+        org.example.pages.LoginPage lp = new org.example.pages.LoginPage(driver);
+        lp.login(TEST_USERNAME, NEW_VALID_PW);
+        wait.until(d -> !d.getCurrentUrl().contains("login/"));
+        bp().goToChangePassword();
         driver.findElement(FIELD_OLD_PW).sendKeys(NEW_VALID_PW);
         driver.findElement(FIELD_NEW_PW).sendKeys(TEST_PASSWORD);
         driver.findElement(FIELD_CONFIRM_PW).sendKeys(TEST_PASSWORD);
         driver.findElement(BTN_CHANGE_PW).click();
         sleep(2000);
-        System.out.println("  → Đã khôi phục mật khẩu cũ");
+        System.out.println("  \u2192 Đã khôi phục mật khẩu cũ");
     }
 
     // ════════════════════════════════════════════════════
@@ -60,11 +64,11 @@ public class ChangePasswordTest extends BaseTest {
         driver.findElement(BTN_CHANGE_PW).click();
         sleep(1500);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống báo thành công dù sai mật khẩu hiện tại!");
 
         Assert.assertTrue(
-                pageContainsError("không đúng", "incorrect", "wrong",
+                bp().pageContainsError("không đúng", "incorrect", "wrong",
                         "mật khẩu hiện tại", "current password", "error"),
                 "FAIL: Không hiển thị lỗi khi sai mật khẩu hiện tại"
         );
@@ -84,11 +88,11 @@ public class ChangePasswordTest extends BaseTest {
         driver.findElement(BTN_CHANGE_PW).click();
         sleep(1500);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống báo thành công dù xác nhận không khớp!");
 
         Assert.assertTrue(
-                pageContainsError("không khớp", "does not match", "mismatch",
+                bp().pageContainsError("không khớp", "does not match", "mismatch",
                         "xác nhận", "confirm", "error"),
                 "FAIL: Không hiển thị lỗi khi xác nhận mật khẩu không khớp"
         );
@@ -108,11 +112,11 @@ public class ChangePasswordTest extends BaseTest {
         driver.findElement(BTN_CHANGE_PW).click();
         sleep(1500);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống báo thành công dù mật khẩu chỉ 3 ký tự!");
 
         Assert.assertTrue(
-                pageContainsError("ít nhất 8", "at least 8", "minimum",
+                bp().pageContainsError("ít nhất 8", "at least 8", "minimum",
                         "too short", "quá ngắn", "error", "invalid"),
                 "FAIL: Không hiển thị lỗi khi mật khẩu quá ngắn"
         );
@@ -132,7 +136,7 @@ public class ChangePasswordTest extends BaseTest {
         driver.findElement(BTN_CHANGE_PW).click();
         sleep(1500);
 
-        boolean hasError = pageContainsError(
+        boolean hasError = bp().pageContainsError(
                 "không được trùng", "same as current", "must be different",
                 "phải khác", "error"
         );
@@ -157,11 +161,11 @@ public class ChangePasswordTest extends BaseTest {
         driver.findElement(BTN_CHANGE_PW).click();
         sleep(1500);
 
-        Assert.assertFalse(isSuccess(),
+        Assert.assertFalse(bp().isSuccess(),
                 "FAIL: Hệ thống báo thành công dù không nhập gì!");
 
         Assert.assertTrue(
-                pageContainsError("vui lòng nhập", "required", "bắt buộc",
+                bp().pageContainsError("vui lòng nhập", "required", "bắt buộc",
                         "không được để trống", "error", "invalid"),
                 "FAIL: Không hiển thị lỗi khi để trống tất cả trường"
         );
@@ -171,15 +175,16 @@ public class ChangePasswordTest extends BaseTest {
     @Test(priority = 7,
             description = "FE07_API01 – PUT /api/user/change-password – Đổi mật khẩu thành công")
     public void API01_DoiMatKhauThanhCong() {
-        loginAsUser();
+        driver.get(BASE_URL + "logout/?silent=1");
+        bp().loginAsUser();
         String body = "{\"old_password\":\"" + VALID_PASSWORD + "\"," +
                 "\"new_password\":\"NewPass@456_api!\"}";
         log("Gọi PUT " + API_CHANGE_PW);
         log("Request body: " + body);
 
-        String result = callChangePwAPI("PUT", body);
-        String status = statusOf(result);
-        String resp   = bodyOf(result);
+        String result = bp().callChangePwAPI("PUT", body);
+        String status = bp().statusOf(result);
+        String resp   = bp().bodyOf(result);
 
         log("API status : " + status);
         log("API body   : " + resp);
@@ -199,21 +204,22 @@ public class ChangePasswordTest extends BaseTest {
         log("Reset lại mật khẩu ban đầu");
         String resetBody = "{\"old_password\":\"NewPass@456_api!\"," +
                 "\"new_password\":\"" + VALID_PASSWORD + "\"}";
-        String resetResult = callChangePwAPI("PUT", resetBody);
-        log("Reset status: " + statusOf(resetResult));
+        String resetResult = bp().callChangePwAPI("PUT", resetBody);
+        log("Reset status: " + bp().statusOf(resetResult));
     }
 
     @Test(priority = 8,
             description = "FE07_API02 – PUT /api/user/change-password – Mật khẩu cũ sai")
     public void API02_MatKhauCuSai() {
-        loginAsUser();
+        driver.get(BASE_URL + "logout/?silent=1");
+        bp().loginAsUser();
         String body = "{\"old_password\":\"WrongPass@WrongWrong\",\"new_password\":\"NewPass@789!\"}";
         log("Gọi PUT " + API_CHANGE_PW + " với mật khẩu cũ SAI");
         log("Request body: " + body);
 
-        String result = callChangePwAPI("PUT", body);
-        String status = statusOf(result);
-        String resp   = bodyOf(result);
+        String result = bp().callChangePwAPI("PUT", body);
+        String status = bp().statusOf(result);
+        String resp   = bp().bodyOf(result);
 
         log("API status : " + status);
         log("API body   : " + resp);
@@ -247,7 +253,9 @@ public class ChangePasswordTest extends BaseTest {
     @Test(priority = 9,
             description = "FE07_API03 – PUT /api/user/change-password – Không có token xác thực")
     public void API03_KhongCoToken() {
-        // KHÔNG đăng nhập – truy cập trang đổi mật khẩu
+        // KHÔNG đăng nhập - logout trước
+        driver.get(BASE_URL + "logout/?silent=1");
+        sleep(500);
         log("Truy cập " + CHANGE_PW_URL + " khi CHƯA đăng nhập");
         driver.get(CHANGE_PW_URL);
 
@@ -260,10 +268,10 @@ public class ChangePasswordTest extends BaseTest {
         log("Hiện form login: " + showsLogin);
 
         // Gọi API trực tiếp không có session
-        String result    = callChangePwAPI("PUT",
+        String result    = bp().callChangePwAPI("PUT",
                 "{\"old_password\":\"any\",\"new_password\":\"newpass123\"}");
-        String apiStatus = statusOf(result);
-        String apiBody   = bodyOf(result);
+        String apiStatus = bp().statusOf(result);
+        String apiBody   = bp().bodyOf(result);
         boolean apiBlocked = apiStatus.equals("401") || apiStatus.equals("403") ||
                 apiStatus.equals("302");
 

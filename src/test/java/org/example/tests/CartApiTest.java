@@ -18,7 +18,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class CartApiTest {
+public class CartApiTest extends BaseTest {
 
     private static final String BASE_URL = "http://127.0.0.1:8000";
     private static final String LOGIN_URL = BASE_URL + "/login/";

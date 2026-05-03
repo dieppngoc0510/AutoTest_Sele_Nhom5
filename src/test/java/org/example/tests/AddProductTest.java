@@ -16,13 +16,13 @@ public class AddProductTest extends BaseTest {
 
     @BeforeMethod
     public void prepareUser() {
-        loginAsDefaultUser();
-        clearCart();
+        bp().loginAsDefaultUser();
+        bp().clearCart();
     }
 
     @Test(description = "FE08-TC01 - Thêm SP thành công khi chọn đủ màu và size")
     public void testAddProductSuccess() {
-        goToProduct(AO_GILE_LEN);
+        bp().goToProduct(AO_GILE_LEN);
         ProductPage productPage = new ProductPage(driver);
         productPage.selectColor(0);
         productPage.selectSize(0);
@@ -41,7 +41,7 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC02 - Thêm SP khi chưa chọn kích thước")
     public void testAddProductMissingSize() {
-        goToProduct(AO_GILE_LEN);
+        bp().goToProduct(AO_GILE_LEN);
         ProductPage productPage = new ProductPage(driver);
         productPage.selectColor(0);
         productPage.clickAddToCart();
@@ -52,7 +52,7 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC03 - Thêm SP khi chưa chọn màu sắc")
     public void testAddProductMissingColor() {
-        goToProduct(AO_GILE_LEN);
+        bp().goToProduct(AO_GILE_LEN);
         ProductPage productPage = new ProductPage(driver);
         productPage.selectSize(0);
         productPage.clickAddToCart();
@@ -63,7 +63,7 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC04 - Thêm SP đã có trong giỏ hàng (cùng màu, cùng size)")
     public void testAddDuplicateProduct() {
-        goToProduct(AO_TRE_VAI);
+        bp().goToProduct(AO_TRE_VAI);
         ProductPage productPage = new ProductPage(driver);
         productPage.addProductToCart(0, 0);
         Assert.assertTrue(productPage.isToastHidden(), "Thông báo thêm giỏ hàng lần đầu chưa tự động ẩn");
@@ -81,10 +81,10 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC05 - Thêm nhiều sản phẩm khác nhau vào giỏ")
     public void testAddMultipleProducts() {
-        goToProduct(SET_VAY_SUONG);
+        bp().goToProduct(SET_VAY_SUONG);
         new ProductPage(driver).addProductToCart(0, 0);
 
-        goToProduct(AO_KHOAC_DA_LON);
+        bp().goToProduct(AO_KHOAC_DA_LON);
         new ProductPage(driver).addProductToCart(0, 0);
 
         CartSidebar cartSidebar = new CartSidebar(driver);
@@ -95,7 +95,7 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC06 - Kiểm tra giá hiển thị đúng khi thêm vào giỏ")
     public void testPriceConsistency() {
-        goToProduct(SET_VAY_SUONG);
+        bp().goToProduct(SET_VAY_SUONG);
         new ProductPage(driver).addProductToCart(0, 0);
 
         CartSidebar cartSidebar = new CartSidebar(driver);
@@ -106,7 +106,7 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC07 - Badge icon giỏ hàng hiển thị số lượng loại SP, không phải tổng số lượng")
     public void testBadgeCountByTypes() {
-        goToProduct(SET_VAY_SUONG);
+        bp().goToProduct(SET_VAY_SUONG);
         ProductPage productPage = new ProductPage(driver);
         productPage.addProductToCart(0, 0);
         Assert.assertTrue(productPage.isToastHidden(), "Thông báo thêm giỏ hàng lần đầu chưa tự động ẩn");
@@ -121,7 +121,7 @@ public class AddProductTest extends BaseTest {
 
         @Test(description = "FE08-TC09 - Thông báo tự động ẩn sau một khoảng thời gian")
         public void testToastBehavior() {
-            goToProduct(AO_GILE_LEN);
+            bp().goToProduct(AO_GILE_LEN);
             ProductPage productPage = new ProductPage(driver);
             productPage.addProductToCart(0, 0);
 
@@ -133,7 +133,7 @@ public class AddProductTest extends BaseTest {
 
     @Test(description = "FE08-TC10 - Nhấn \"Xem giỏ hàng\" trên thông báo điều hướng đúng")
     public void testViewCartFromToast() {
-        goToProduct(SET_VAY_SUONG);
+        bp().goToProduct(SET_VAY_SUONG);
         ProductPage productPage = new ProductPage(driver);
         productPage.addProductToCart(0, 0);
         productPage.clickViewCartOnToast();

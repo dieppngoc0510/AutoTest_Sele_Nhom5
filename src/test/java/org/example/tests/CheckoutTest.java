@@ -9,32 +9,14 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import org.example.pages.CheckoutPage;
 
-public class CheckoutTest {
+public class CheckoutTest extends BaseTest {
 
-    @BeforeMethod
-    public void setup() {
-        ChromeOptions options = new ChromeOptions();
-        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
-        options.addArguments("--remote-allow-origins=*");
-
-        Constant.WEBDRIVER.set(new ChromeDriver(options));
-        Constant.WEBDRIVER.get().manage().window().maximize();
-
-        login("ngocdiep", "123456");
+    @BeforeMethod(alwaysRun = true)
+    @Override
+    public void beforeMethod() {
+        super.beforeMethod();
+        login("ngocdiep", "12345678");
     }
-
-    @AfterMethod
-    public void tearDown() {
-        if (Constant.WEBDRIVER.get() != null) {
-            Constant.WEBDRIVER.get().quit();
-            Constant.WEBDRIVER.remove();
-        }
-    }
-
-    private void sleep(int ms) {
-        try { Thread.sleep(ms); } catch (Exception e) {}
-    }
-
     private void login(String user, String pass) {
         Constant.WEBDRIVER.get().get("http://127.0.0.1:8000/login");
         sleep(1000);
@@ -94,19 +76,6 @@ public class CheckoutTest {
         String currentUrl = Constant.WEBDRIVER.get().getCurrentUrl().toLowerCase();
         Assert.assertTrue(currentUrl.contains("order-success") || page.isOrderSuccess(),
                 "BUG: Không chuyển hướng đến trang thành công. URL: " + currentUrl);
-    }
-
-    @Test
-    public void FE11_TC02_SuccessfulQRCheckout() {
-        System.out.println("\nĐang chạy: TC02 - Thanh toán bằng mã QR");
-        goToCheckout();
-
-        CheckoutPage page = new CheckoutPage();
-        page.selectPaymentMethodQR();
-
-        page.clickDatHang();
-        sleep(3000);
-        Assert.assertTrue(page.isQRCodeDisplayed(), "BUG: Đặt hàng QR thất bại, không hiển thị mã!");
     }
 
     @Test

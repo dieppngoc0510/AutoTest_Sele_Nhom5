@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.List;
 
-public class ApiSearchTest {
+public class ApiSearchTest extends BaseTest {
 
     @BeforeClass
     public void setup() {

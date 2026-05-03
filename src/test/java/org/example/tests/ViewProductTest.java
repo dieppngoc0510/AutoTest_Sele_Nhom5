@@ -9,24 +9,12 @@ import org.testng.annotations.Test;
 import org.example.pages.HomePage;
 import org.example.pages.ProductDetailPage;
 
-public class ViewProductTest {
+public class ViewProductTest extends BaseTest {
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
+    @Override
     public void beforeMethod() {
-        ChromeOptions options = new ChromeOptions();
-        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
-        options.addArguments("--remote-allow-origins=*");
-
-        Constant.WEBDRIVER.set(new ChromeDriver(options));
-        Constant.WEBDRIVER.get().manage().window().maximize();
-    }
-
-    @AfterMethod
-    public void afterMethod() {
-        if (Constant.WEBDRIVER.get() != null) {
-            Constant.WEBDRIVER.get().quit();
-            Constant.WEBDRIVER.remove();
-        }
+        super.beforeMethod();
     }
 
     @Test
@@ -96,13 +84,7 @@ public class ViewProductTest {
         Assert.assertTrue(hasError, "BUG: ID sản phẩm không tồn tại nhưng hệ thống không hiển thị trang lỗi 404!");
     }
 
-    private void sleep(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+
 
 
     @Test

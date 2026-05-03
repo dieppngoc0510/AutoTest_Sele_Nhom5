@@ -27,7 +27,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES01 - Form đăng ký hiển thị đúng trên điện thoại")
     public void testRegisterFormOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        getUrl(BASE_URL + "register/");
+        driver.get(BASE_URL + "register/");
         responsivePage.waitForVisible(By.cssSelector(".auth-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang đăng ký không được tràn ngang trên điện thoại.");
@@ -41,7 +41,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES02 - Form đăng ký hiển thị đúng trên máy tính")
     public void testRegisterFormOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        getUrl(BASE_URL + "register/");
+        driver.get(BASE_URL + "register/");
         responsivePage.waitForVisible(By.cssSelector(".auth-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang đăng ký không được tràn ngang trên máy tính.");
@@ -54,7 +54,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES03 - Form đăng nhập hiển thị đúng trên điện thoại")
     public void testLoginFormOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        getUrl(BASE_URL + "login/");
+        driver.get(BASE_URL + "login/");
         responsivePage.waitForVisible(By.cssSelector(".auth-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang đăng nhập không được tràn ngang trên điện thoại.");
@@ -68,7 +68,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES04 - Form đăng nhập hiển thị đúng trên máy tính")
     public void testLoginFormOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        getUrl(BASE_URL + "login/");
+        driver.get(BASE_URL + "login/");
         responsivePage.waitForVisible(By.cssSelector(".auth-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang đăng nhập không được tràn ngang trên máy tính.");
@@ -81,7 +81,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES05 - Menu đăng xuất truy cập được trên điện thoại")
     public void testLogoutMenuOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        loginAsDefaultUser();
+        bp().loginAsDefaultUser();
         responsivePage.waitForVisible(By.id("userMenuToggle"));
 
         WebElement toggle = driver.findElement(By.id("userMenuToggle"));
@@ -97,7 +97,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES06 - Menu đăng xuất hiển thị đúng trên máy tính")
     public void testLogoutMenuOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        loginAsDefaultUser();
+        bp().loginAsDefaultUser();
         responsivePage.waitForVisible(By.id("userMenuToggle"));
 
         driver.findElement(By.id("userMenuToggle")).click();
@@ -112,7 +112,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES07 - Danh sách sản phẩm dùng lưới gọn trên điện thoại")
     public void testProductListOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        openHomePage();
+        bp().openHomePage();
 
         responsivePage.assertNoHorizontalOverflow("Danh sách sản phẩm không được tràn ngang trên điện thoại.");
         int columns = responsivePage.countDistinctLefts(".product-grid .product-card", 4);
@@ -124,7 +124,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES08 - Danh sách sản phẩm dùng lưới nhiều cột trên máy tính")
     public void testProductListOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        openHomePage();
+        bp().openHomePage();
 
         responsivePage.assertNoHorizontalOverflow("Danh sách sản phẩm không được tràn ngang trên máy tính.");
         int columns = responsivePage.countDistinctLefts(".product-grid .product-card", 4);
@@ -135,7 +135,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES09 - Chi tiết sản phẩm xếp dọc trên điện thoại")
     public void testProductDetailOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        getUrl(BASE_URL + "product/7/");
+        driver.get(BASE_URL + "product/7/");
         responsivePage.waitForVisible(By.cssSelector(".product-detail-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang chi tiết sản phẩm không được tràn ngang trên điện thoại.");
@@ -148,7 +148,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES10 - Chi tiết sản phẩm hiển thị 2 cột trên máy tính")
     public void testProductDetailOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        getUrl(BASE_URL + "product/7/");
+        driver.get(BASE_URL + "product/7/");
         responsivePage.waitForVisible(By.cssSelector(".product-detail-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang chi tiết sản phẩm không được tràn ngang trên máy tính.");
@@ -159,7 +159,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES11 - Thanh tìm kiếm hoạt động trên điện thoại")
     public void testSearchBarOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        openHomePage();
+        bp().openHomePage();
         WebElement searchInput = responsivePage.waitForVisible(SEARCH_INPUT);
 
         responsivePage.assertNoHorizontalOverflow("Giao diện tìm kiếm không được tràn ngang trên điện thoại.");
@@ -173,7 +173,7 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES12 - Thanh tìm kiếm hiển thị đúng trên máy tính")
     public void testSearchBarOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        openHomePage();
+        bp().openHomePage();
         WebElement searchInput = responsivePage.waitForVisible(SEARCH_INPUT);
 
         responsivePage.assertNoHorizontalOverflow("Giao diện tìm kiếm không được tràn ngang trên máy tính.");
@@ -185,8 +185,8 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES13 - Trang hồ sơ hiển thị đúng trên điện thoại")
     public void testProfilePageOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        loginAsDefaultUser();
-        getUrl(BASE_URL + "profile/");
+        bp().loginAsDefaultUser();
+        driver.get(BASE_URL + "profile/");
         responsivePage.waitForVisible(By.cssSelector(".shopee-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang hồ sơ không được tràn ngang trên điện thoại.");
@@ -201,8 +201,8 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES14 - Trang hồ sơ hiển thị đúng trên máy tính")
     public void testProfilePageOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        loginAsDefaultUser();
-        getUrl(BASE_URL + "profile/");
+        bp().loginAsDefaultUser();
+        driver.get(BASE_URL + "profile/");
         responsivePage.waitForVisible(By.cssSelector(".shopee-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang hồ sơ không được tràn ngang trên máy tính.");
@@ -215,8 +215,8 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES15 - Form đổi mật khẩu hiển thị đúng trên điện thoại")
     public void testChangePasswordOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        loginAsDefaultUser();
-        getUrl(BASE_URL + "change-password/");
+        bp().loginAsDefaultUser();
+        driver.get(BASE_URL + "change-password/");
         responsivePage.waitForVisible(By.cssSelector(".shopee-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang đổi mật khẩu không được tràn ngang trên điện thoại.");
@@ -229,8 +229,8 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES16 - Form đổi mật khẩu hiển thị đúng trên máy tính")
     public void testChangePasswordOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        loginAsDefaultUser();
-        getUrl(BASE_URL + "change-password/");
+        bp().loginAsDefaultUser();
+        driver.get(BASE_URL + "change-password/");
         responsivePage.waitForVisible(By.cssSelector(".shopee-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang đổi mật khẩu không được tràn ngang trên máy tính.");
@@ -243,40 +243,40 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES17 - Sidebar giỏ hàng hiển thị đúng trên điện thoại")
     public void testCartLayoutOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        loginAsDefaultUser();
-        clearCart();
-        openHomePage();
-        addProductToCartDirect(7, "Xanh đen", "S");
+        bp().loginAsDefaultUser();
+        bp().clearCart();
+        bp().openHomePage();
+        bp().addProductToCartDirect(7, "Xanh đen", "S");
         responsivePage.openResponsiveCartAndWaitForItems(1);
 
         responsivePage.assertNoHorizontalOverflow("Sidebar giỏ hàng không được tràn ngang trên điện thoại.");
         responsivePage.assertTopLevelWidthFits("#cart-sidebar", 0, "Sidebar giỏ hàng phải vừa với chiều rộng màn hình điện thoại.");
-        Assert.assertEquals(getCartItems().size(), 1, "Giỏ hàng phải hiển thị sản phẩm đã thêm trên điện thoại.");
+        Assert.assertEquals(bp().getCartItems().size(), 1, "Giỏ hàng phải hiển thị sản phẩm đã thêm trên điện thoại.");
     }
 
     @Test(description = "RES18 - Sidebar giỏ hàng hiển thị đúng trên máy tính")
     public void testCartLayoutOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        loginAsDefaultUser();
-        clearCart();
-        openHomePage();
-        addProductToCartDirect(7, "Xanh đen", "S");
+        bp().loginAsDefaultUser();
+        bp().clearCart();
+        bp().openHomePage();
+        bp().addProductToCartDirect(7, "Xanh đen", "S");
         responsivePage.openResponsiveCartAndWaitForItems(1);
 
         responsivePage.assertNoHorizontalOverflow("Sidebar giỏ hàng không được tràn ngang trên máy tính.");
         Assert.assertTrue(responsivePage.getElementWidth("#cart-sidebar") >= 320,
                 "Sidebar giỏ hàng phải giữ được chiều rộng rõ ràng, dễ dùng trên máy tính.");
-        Assert.assertEquals(getCartItems().size(), 1, "Giỏ hàng phải hiển thị sản phẩm đã thêm trên máy tính.");
+        Assert.assertEquals(bp().getCartItems().size(), 1, "Giỏ hàng phải hiển thị sản phẩm đã thêm trên máy tính.");
     }
 
     @Test(description = "RES19 - Trang thanh toán hiển thị đúng trên điện thoại")
     public void testCheckoutOnMobile() {
         responsivePage.setViewport(MOBILE_WIDTH, MOBILE_HEIGHT);
-        loginAsDefaultUser();
-        clearCart();
-        openHomePage();
-        addProductToCartDirect(7, "Xanh đen", "S");
-        getUrl(BASE_URL + "checkout/");
+        bp().loginAsDefaultUser();
+        bp().clearCart();
+        bp().openHomePage();
+        bp().addProductToCartDirect(7, "Xanh đen", "S");
+        driver.get(BASE_URL + "checkout/");
         responsivePage.waitForVisible(By.cssSelector(".checkout-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang thanh toán không được tràn ngang trên điện thoại.");
@@ -289,11 +289,11 @@ public class ResponsiveTest extends BaseTest {
     @Test(description = "RES20 - Trang thanh toán hiển thị đúng trên máy tính")
     public void testCheckoutOnLaptop() {
         responsivePage.setViewport(LAPTOP_WIDTH, LAPTOP_HEIGHT);
-        loginAsDefaultUser();
-        clearCart();
-        openHomePage();
-        addProductToCartDirect(7, "Xanh đen", "S");
-        getUrl(BASE_URL + "checkout/");
+        bp().loginAsDefaultUser();
+        bp().clearCart();
+        bp().openHomePage();
+        bp().addProductToCartDirect(7, "Xanh đen", "S");
+        driver.get(BASE_URL + "checkout/");
         responsivePage.waitForVisible(By.cssSelector(".checkout-container"));
 
         responsivePage.assertNoHorizontalOverflow("Trang thanh toán không được tràn ngang trên máy tính.");

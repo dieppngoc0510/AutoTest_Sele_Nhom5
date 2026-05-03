@@ -14,7 +14,7 @@ import java.net.http.HttpResponse;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-public class CheckoutApiTest {
+public class CheckoutApiTest extends BaseTest {
 
     private static final String AUTH_TOKEN = "Token 870d1ea9be2e5d6c8eaef2803aea6e6ad204fbd9";
 

@@ -30,13 +30,13 @@ public class Constant {
     public static final By FIELD_CONFIRM_PW = By.name("confirm_password");
     public static final By BTN_CHANGE_PW    = By.cssSelector("button.s-btn-save");
 
-    // ── Default test account ──────────────────────────────────────────────────
-    public static final String TEST_USERNAME = "ha";
-    public static final String TEST_PASSWORD  = "12345678";
+    // ── Default test account (Admin) ──────────────────────────────────────────
+    public static final String TEST_USERNAME = "admin";
+    public static final String TEST_PASSWORD  = "hani12345";
 
     // ── API-test account (regular user) ──────────────────────────────────────
     public static final String VALID_USERNAME = "ngocdiep";
-    public static final String VALID_PASSWORD = "123456";
+    public static final String VALID_PASSWORD = "12345678";
 
     // ── API endpoints / page URLs ─────────────────────────────────────────────
     public static final String API_PROFILE    = "/api/user/profile/";
@@ -45,5 +45,5 @@ public class Constant {
     public static final String CHANGE_PW_URL  = "http://127.0.0.1:8000/change-password/";
 
     // ── Toast notification ────────────────────────────────────────────────────
-    public static final By TOAST = By.id("toast-container");
+    public static final By TOAST = By.cssSelector("#toast-container .toast");
 }
