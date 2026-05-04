@@ -92,22 +92,22 @@ public class BasePage {
      */
     public void login(String username, String password) {
         driver.get(BASE_URL + "/login/");
-        WebDriverWait w = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait w = new WebDriverWait(driver, Duration.ofSeconds(20));
         
         try {
-            w.until(ExpectedConditions.visibilityOfElementLocated(By.name("username")))
-                    .sendKeys(username);
-            driver.findElement(By.name("password")).sendKeys(password);
-            driver.findElement(By.cssSelector("button.btn-auth-submit")).click();
+            WebElement userEl = w.until(ExpectedConditions.visibilityOfElementLocated(By.name("username")));
+            userEl.clear();
+            userEl.sendKeys(username);
+            
+            WebElement passEl = driver.findElement(By.name("password"));
+            passEl.clear();
+            passEl.sendKeys(password);
+            
+            WebElement btn = driver.findElement(By.cssSelector("button.btn-auth-submit"));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
             
             // Đợi URL thay đổi (không còn ở trang login)
             w.until(ExpectedConditions.not(ExpectedConditions.urlContains("/login/")));
-            
-            // Chờ các thông báo toast biến mất
-            try {
-                w.until(ExpectedConditions.invisibilityOfElementLocated(org.example.tests.Constant.TOAST));
-            } catch (Exception ignored) {}
-            
         } catch (TimeoutException e) {
             // NẾU LỖI: Kiểm tra xem có thông báo lỗi hiển thị trên màn hình không
             String errorMsg = "Không xác định";

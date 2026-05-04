@@ -34,7 +34,11 @@ public class BaseTest {
     public void beforeMethod() {
         WebDriverManager.chromedriver().setup();
         Constant.WEBDRIVER.set(new ChromeDriver());
-        Constant.WEBDRIVER.get().manage().window().maximize();
+        try {
+            Constant.WEBDRIVER.get().manage().window().maximize();
+        } catch (Exception e) {
+            System.err.println("Warning: Could not maximize window: " + e.getMessage());
+        }
         driver = Constant.WEBDRIVER.get();
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         basePage = null; // reset mỗi test

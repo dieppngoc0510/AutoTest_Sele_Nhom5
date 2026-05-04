@@ -5,7 +5,7 @@
         <listener class-name="org.example.report.TestListener"/>
     </listeners>
 
-    <test name="Cart Tests">
+    <test name="All Tests">
         <classes>
             <class name="org.example.tests.AddProductTest"/>
             <class name="org.example.tests.UpdateCartTest"/>
@@ -13,6 +13,14 @@
             <class name="org.example.tests.CartApiTest"/>
             <class name="org.example.tests.ApiSearchTest"/>
             <class name="org.example.tests.ResponsiveTest"/>
+            <class name="org.example.tests.CheckoutTest"/>
+            <class name="org.example.tests.CreateOrderTest"/>
+            <class name="org.example.tests.DeleteOrderTest"/>
+            <class name="org.example.tests.LogoutTest"/>
+            <class name="org.example.tests.ProfileTest"/>
+            <class name="org.example.tests.ChangePasswordTest"/>
+            <class name="org.example.tests.SearchTest"/>
+            <class name="org.example.tests.ViewProductTest"/>
         </classes>
     </test>
 </suite>

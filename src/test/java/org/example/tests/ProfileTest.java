@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import static org.example.tests.Constant.*;
@@ -327,9 +328,11 @@ public class ProfileTest extends BaseTest {
     public void API02_PutProfileThanhCong() {
         driver.get(BASE_URL + "logout/?silent=1");
         bp().loginAsUser();
-        String jsonBody = "{\"fullname\":\"Nguyen Van An\"," +
-                "\"phone\":\"0912345678\"," +
-                "\"address\":\"123 Le Loi, Da Nang\"}";
+        String jsonBody = "{\"first_name\":\"Lê Thị Quỳnh Như\"," +
+                "\"phone\":\"0987654321\"," +
+                "\"gender\":\"nu\"," +
+                "\"birthdate\":\"1995-01-01\"," +
+                "\"address\":\"123 Đường ABC, Quận 1, TP.HCM\"}";
         log("Gọi PUT " + API_PROFILE);
         log("Request body: " + jsonBody);
 
@@ -357,7 +360,7 @@ public class ProfileTest extends BaseTest {
         waitFor(fullnameField);
         String savedName = driver.findElement(fullnameField).getAttribute("value");
         log("Họ tên sau khi PUT: " + savedName);
-        Assert.assertEquals(savedName, "Nguyen Van An",
+        Assert.assertEquals(savedName, "Lê Thị Quỳnh Như",
                 "Dữ liệu phải được lưu đúng vào database sau khi PUT thành công");
     }
 
@@ -404,7 +407,10 @@ public class ProfileTest extends BaseTest {
         log("SĐT hiện tại trong DB: " + originalPhone);
 
         // ── Bước 2: Gọi API PUT với phone không hợp lệ ───────
-        String badBody = "{\"fullname\":\"Test User\",\"phone\":\"abc\"}";
+        String badBody = "{\"first_name\":\"Lê Thị Quỳnh Như\"," +
+                "\"phone\":\"abc\"," +
+                "\"gender\":\"nu\"," +
+                "\"address\":\"123 Đường ABC, Quận 1, TP.HCM\"}";
         log("Gọi PUT " + API_PROFILE + " với phone='abc'");
 
         String result = bp().callAPI("PUT", API_PROFILE, badBody);
@@ -460,5 +466,29 @@ public class ProfileTest extends BaseTest {
             Assert.assertTrue(true, "Hiện lỗi validation SĐT không hợp lệ ✓");
         }
     }
-}
 
+    @AfterClass(alwaysRun = true)
+    public void restoreProfile() {
+        System.out.println("\n[POST-TEST] Đang khôi phục dữ liệu Profile gốc...");
+        try {
+            bp().loginAsUser();
+            bp().goToProfile();
+            
+            bp().clearAndType(FIELD_FULLNAME, "Lê Thị Quỳnh Như");
+            bp().clearAndType(FIELD_EMAIL, "ngocdiep@gmail.com");
+            bp().clearAndType(FIELD_PHONE, "0987654321");
+            bp().clearAndType(FIELD_ADDRESS, "123 Đường ABC, Quận 1, TP.HCM");
+            
+            // Chọn lại giới tính Nữ
+            try {
+                WebElement labelNu = driver.findElement(By.xpath("//div[contains(@class,'s-radio-group')]//label[contains(.,'Nữ')]"));
+                labelNu.click();
+            } catch (Exception e) {}
+            
+            submitProfileForm();
+            System.out.println(">>> Đã khôi phục dữ liệu thành công.");
+        } catch (Exception e) {
+            System.err.println(">>> Lỗi khi khôi phục dữ liệu: " + e.getMessage());
+        }
+    }
+}

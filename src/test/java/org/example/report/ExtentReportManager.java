@@ -9,7 +9,7 @@ public class ExtentReportManager {
 
     public static ExtentReports getExtentReports() {
         if (extent == null) {
-            ExtentSparkReporter spark = new ExtentSparkReporter("target/ExtentReport.html");
+            ExtentSparkReporter spark = new ExtentSparkReporter("target/LastReport.html");
             
             String customCss = ".report-name { font-family: 'Montserrat', sans-serif !important; font-weight: 800 !important; }" +
                                ".nav-logo { font-family: 'Montserrat', sans-serif !important; }" +
